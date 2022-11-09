@@ -637,7 +637,7 @@ class _Tab2State extends State<Tab2Data> with AutomaticKeepAliveClientMixin {
                     );
                   }
                   List<Users> getAllUserList =
-                      snapshot.data!.users != null ? snapshot.data!.users! : [];
+                      snapshot.data!.users != null ? snapshot.data!.users : [];
                   return getAllUserList.length > 0
                       ? ListView.separated(
                           padding: EdgeInsets.all(10),

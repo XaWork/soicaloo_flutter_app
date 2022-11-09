@@ -24,7 +24,7 @@ class SearchUserModel {
     data['response_code'] = this.responseCode;
     data['message'] = this.message;
     if (this.users != null) {
-      data['users'] = this.users!.map((v) => v.toJson()).toList();
+      data['users'] = this.users.map((v) => v.toJson()).toList();
     }
     data['status'] = this.status;
     return data;

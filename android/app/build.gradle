@@ -58,7 +58,7 @@ apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
         release {
             keyAlias keystoreProperties['keyAlias']
             keyPassword keystoreProperties['keyPassword']
-            storeFile file(keystoreProperties['storeFile'])
+            storeFile file("key.jks")
             storePassword keystoreProperties['storePassword']
 //            keyAlias keystoreProperties['keyAlias']
 //            keyPassword keystoreProperties['keyPassword']
