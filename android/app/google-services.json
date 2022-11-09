@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "379030150261",
+    "project_id": "mphelpline-cb694",
+    "storage_bucket": "mphelpline-cb694.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:379030150261:android:cdc052126290b60d99ac3c",
+        "android_client_info": {
+          "package_name": "com.missingperson.helpline"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "379030150261-famqrgldnvde7o4adk92dvru3v0nih8v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.missingperson.helpline",
+            "certificate_hash": "8ca4c4222c22c842732565a900ae18f0d74de6e4"
+          }
+        },
+        {
+          "client_id": "379030150261-g18e8kaho8uohq6cl7bv4vsio5homcon.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_adHH7rjQQnvyIHc1oKV95btjbtuPT3Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "379030150261-g18e8kaho8uohq6cl7bv4vsio5homcon.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "379030150261-r96ipvv2mn5ghk7n8dgicoekisposnot.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.missingperson.helpline"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
