@@ -1313,6 +1313,7 @@ class _HomeState extends State<ViewPublicPost> {
         // Divider(height: 1),
         // myRow('NGO / Your Name', '${post.foundData?.ngoOrUsername ?? ''}', 0),
         // Divider(height: 1),
+        // ignore: todo
         //TODO: Need to open this
         // myRow('Contact No', '${post.foundData?.contactNumber ?? ''}', 1),
       ],

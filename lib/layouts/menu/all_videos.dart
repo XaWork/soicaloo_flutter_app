@@ -1470,7 +1470,7 @@ class _AllVideosState extends State<AllVideos>
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
                                       // background color
-                                      primary: appColor,
+                                      backgroundColor: appColor,
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 30, vertical: 10),
                                       textStyle: const TextStyle(fontSize: 15),
@@ -1530,7 +1530,7 @@ class _AllVideosState extends State<AllVideos>
                                       ElevatedButton(
                                         style: ElevatedButton.styleFrom(
                                           // background color
-                                          primary: appColor,
+                                          backgroundColor: appColor,
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 30, vertical: 10),
                                           textStyle:

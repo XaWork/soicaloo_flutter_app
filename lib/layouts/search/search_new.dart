@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'dart:async';
 import 'package:socialoo/Helper/sizeConfig.dart';
 import 'package:socialoo/bloc/lates_post_bloc.dart';
