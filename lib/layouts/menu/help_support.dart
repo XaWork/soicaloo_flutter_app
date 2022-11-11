@@ -106,7 +106,7 @@ class _SettingsState extends State<HelpSupportPage> {
                   ),
                 ).onTap(() {
                   _handleURLButtonPress(
-                      context, "https://docsopedia.com/privacy-policy.html");
+                      context, "https://app.waahak.com/missing-person/privacy-policy");
                 }),
                 Card(
                   shape: RoundedRectangleBorder(
@@ -127,7 +127,7 @@ class _SettingsState extends State<HelpSupportPage> {
                   ),
                 ).onTap(() {
                   _handleURLButtonPress(
-                      context, "https://docsopedia.com/term-policy.html");
+                      context, "https://app.waahak.com/missing-person/terms-and-conditions");
                 }),
               ],
             ),

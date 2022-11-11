@@ -141,7 +141,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
           ListTile(
             onTap: () {
               _handleURLButtonPress(context,
-                  "https://primocysapp.com/socialoo/socialoo-term-policy.html");
+                  "https://app.waahak.com/missing-person/terms-and-conditions");
               // Navigator.of(context).pushNamed('/Pages', arguments: 3);
             },
             leading: Icon(
@@ -157,7 +157,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
           ListTile(
             onTap: () {
               _handleURLButtonPress(context,
-                  "https://primocysapp.com/socialoo/socialoo-privacy-policy.html");
+                  "https://app.waahak.com/missing-person/privacy-policy");
               // Navigator.of(context).pushNamed('/Pages', arguments: 3);
             },
             leading: Icon(
