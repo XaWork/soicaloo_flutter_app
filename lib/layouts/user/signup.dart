@@ -339,7 +339,7 @@ class _SignUpState extends State<SignUp> {
           InkWell(
             onTap: () {
               _handleURLButtonPress(
-                  context, "https://docsopedia.com/term-policy.html");
+                  context, "https://app.waahak.com/missing-person/terms-and-conditions");
             },
             child: Text("Terms and Conditions ",
                 style: TextStyle(
@@ -357,7 +357,7 @@ class _SignUpState extends State<SignUp> {
           InkWell(
             onTap: () {
               _handleURLButtonPress(
-                  context, "https://docsopedia.com/privacy-policy.html");
+                  context, "https://app.waahak.com/missing-person/privacy-policy");
             },
             child: Text("Privacy Policy",
                 style: TextStyle(

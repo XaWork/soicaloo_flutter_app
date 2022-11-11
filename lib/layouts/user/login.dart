@@ -15,6 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:socialoo/layouts/widgets/bezier_container.dart';
 import 'package:socialoo/shared_preferences/preferencesKey.dart';
 
+import '../webview/webview.dart';
+
 class Login extends StatefulWidget {
   @override
   _LoginState createState() => _LoginState();
@@ -303,8 +305,17 @@ class _LoginState extends State<Login> {
     });
   }
 
+  void _handleURLButtonPress(BuildContext context, String url) {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => WebViewContainer(url)));
+  }
+
   Widget terms() {
     return InkWell(
+      onTap: () {
+        _handleURLButtonPress(
+            context, "https://app.waahak.com/missing-person/privacy-policy");
+      },
       child: Container(
         padding: const EdgeInsets.all(15),
         alignment: Alignment.bottomCenter,
