@@ -16,6 +16,7 @@ import 'package:socialoo/layouts/chat/chat.dart';
 import 'package:socialoo/layouts/post/viewPublicPost.dart';
 import 'package:socialoo/layouts/user/myFollowers.dart';
 import 'package:socialoo/layouts/user/myFollowing.dart';
+import 'package:socialoo/layouts/widgets/report_alertdialogmessage.dart';
 import 'package:socialoo/models/postFollowModal.dart';
 import 'package:socialoo/models/postModal.dart';
 import 'package:socialoo/models/unFollowModal.dart';
@@ -125,6 +126,38 @@ class _ProfileState extends State<PublicProfile> {
           ),
           centerTitle: true,
           automaticallyImplyLeading: true,
+          actions: [
+            Container(
+              margin:
+                  const EdgeInsets.only(top: 10.0, bottom: 10.0, right: 10.0),
+              height: 38,
+              width: 120,
+              decoration: const BoxDecoration(
+                color: Color(0xffE5E6EB),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(5.0),
+                ),
+              ),
+              child: const Center(
+                child: Text(
+                  'Report',
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    letterSpacing: 0.0,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ).onTap(() {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return ReportDialog();
+                  });
+            })
+          ],
         ),
         body: isLoading
             ? Center(
