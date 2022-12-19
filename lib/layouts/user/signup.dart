@@ -12,8 +12,11 @@ import 'package:nb_utils/nb_utils.dart';
 // import 'package:socialoo/Helper/sizeConfig.dart';
 import 'package:socialoo/global/global.dart';
 import 'package:socialoo/layouts/user/createProfile.dart';
+import 'package:socialoo/layouts/user/otpverification.dart';
 import 'package:socialoo/layouts/webview/webview.dart';
 import 'package:socialoo/layouts/widgets/bezier_container.dart';
+
+import 'google_sign_in.dart';
 
 class SignUp extends StatefulWidget {
   @override
@@ -27,7 +30,8 @@ class _SignUpState extends State<SignUp> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _obscureText = false;
   bool? checkedValue = false;
-
+  final emailNode = FocusNode();
+  final passwordNode = FocusNode();
   @override
   void initState() {
     super.initState();
@@ -39,6 +43,16 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController cpassController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    cpassController.dispose();
+    mobileController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +92,58 @@ class _SignUpState extends State<SignUp> {
                           height: 10,
                         ),
                         _submitButton(),
-                        SizedBox(height: height * .14),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        _divider(),
+                        // Container(
+                        //   height: 50,
+                        //   margin: const EdgeInsets.symmetric(vertical: 20),
+                        //   decoration: const BoxDecoration(
+                        //     borderRadius: BorderRadius.all(Radius.circular(10)),
+                        //   ),
+                        //   child: Row(
+                        //     children: <Widget>[
+                        //       Expanded(
+                        //         flex: 1,
+                        //         child: Container(
+                        //           decoration: const BoxDecoration(
+                        //             color: Color(0xff1959a9),
+                        //             borderRadius: BorderRadius.only(
+                        //                 bottomLeft: Radius.circular(5),
+                        //                 topLeft: Radius.circular(5)),
+                        //           ),
+                        //           alignment: Alignment.center,
+                        //           child: const Text('G',
+                        //               style: TextStyle(
+                        //                   color: Colors.white,
+                        //                   fontSize: 25,
+                        //                   fontWeight: FontWeight.w400)),
+                        //         ),
+                        //       ),
+                        //       Expanded(
+                        //         flex: 5,
+                        //         child: Container(
+                        //           decoration: const BoxDecoration(
+                        //             color: Color(0xFF1e3c72),
+                        //             borderRadius: BorderRadius.only(
+                        //                 bottomRight: Radius.circular(5),
+                        //                 topRight: Radius.circular(5)),
+                        //           ),
+                        //           alignment: Alignment.center,
+                        //           child: const Text('Sign Up with Google',
+                        //               style: TextStyle(
+                        //                   color: Colors.white,
+                        //                   fontSize: 18,
+                        //                   fontWeight: FontWeight.w400)),
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ).onTap(() {
+                        //   _signInWithGoogle();
+                        // }),
+                        SizedBox(height: height * .01),
                         _loginAccount(),
                       ],
                     ),
@@ -227,6 +292,39 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
+  Widget _divider() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: const <Widget>[
+          SizedBox(
+            width: 20,
+          ),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Divider(
+                thickness: 1,
+              ),
+            ),
+          ),
+          Text('or'),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Divider(
+                thickness: 1,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 20,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _submitButton() {
     return Container(
       width: MediaQuery.of(context).size.width,
@@ -241,16 +339,12 @@ class _SignUpState extends State<SignUp> {
         ),
       ),
       child: const Text(
-        'Register Now',
+        'Sign Up Now',
         style: TextStyle(fontSize: 20, color: Colors.white),
       ),
     ).onTap(() {
-      Pattern pattern =
-          r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-      RegExp regex = new RegExp(pattern as String);
       if (passwordController.text != '' &&
           nameController.text != '' &&
-          regex.hasMatch(emailController.text.trim()) &&
           emailController.text.trim() != '' &&
           mobileController.text.trim().length == 10 &&
           passwordController.text.length > 5 &&
@@ -338,8 +432,8 @@ class _SignUpState extends State<SignUp> {
               )),
           InkWell(
             onTap: () {
-              _handleURLButtonPress(
-                  context, "https://app.waahak.com/missing-person/terms-and-conditions");
+              _handleURLButtonPress(context,
+                  "https://app.waahak.com/missing-person/terms-and-conditions");
             },
             child: Text("Terms and Conditions ",
                 style: TextStyle(
@@ -356,8 +450,8 @@ class _SignUpState extends State<SignUp> {
               )),
           InkWell(
             onTap: () {
-              _handleURLButtonPress(
-                  context, "https://app.waahak.com/missing-person/privacy-policy");
+              _handleURLButtonPress(context,
+                  "https://app.waahak.com/missing-person/privacy-policy");
             },
             child: Text("Privacy Policy",
                 style: TextStyle(
@@ -406,7 +500,7 @@ class _SignUpState extends State<SignUp> {
           });
 
           Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => CreateProfile(
+              builder: (context) => OtpVerification(
                   id: dic['user']['id'],
                   name: nameController.text,
                   password: passwordController.text,
@@ -428,6 +522,27 @@ class _SignUpState extends State<SignUp> {
         isLoading = false;
       });
       socialootoast("Error", e.toString(), context);
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    try {
+      setState(() {
+        emailNode.unfocus();
+        passwordNode.unfocus();
+        isLoading = true;
+      });
+      signInWithGoogle(context).whenComplete(() {
+        setState(() {
+          isLoading = false;
+        });
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print(e);
+      socialootoast("Error", 'Failed to sign in with Google: $e', context);
     }
   }
 }

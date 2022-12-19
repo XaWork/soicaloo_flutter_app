@@ -30,10 +30,18 @@ class _LoginState extends State<Login> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final emailNode = FocusNode();
   final passwordNode = FocusNode();
+  bool _obscureText = false;
 
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -87,8 +95,9 @@ class _LoginState extends State<Login> {
                         const SizedBox(height: 20),
                         _submitButton(),
                         _forgotPassword(),
+                        SizedBox(height: height * .055),
                         _divider(),
-                        _googleButton(),
+                        //_googleButton(),
                         SizedBox(height: height * .055),
                         _createAccount(),
                         terms(),
@@ -150,7 +159,37 @@ class _LoginState extends State<Login> {
     return Column(
       children: <Widget>[
         _entryField("Email id", emailController),
-        _entryField("Password", passwordController, isPassword: true),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Password",
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            TextField(
+                textInputAction: TextInputAction.next,
+                controller: passwordController,
+                obscureText: !_obscureText,
+                decoration: InputDecoration(
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureText ? Icons.visibility : Icons.visibility_off,
+                        color: appColorGrey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureText = !_obscureText;
+                        });
+                      },
+                    ),
+                    border: InputBorder.none,
+                    fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+                    filled: true)),
+          ],
+        )
       ],
     );
   }

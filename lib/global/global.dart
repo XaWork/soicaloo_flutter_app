@@ -21,7 +21,9 @@ List<String> likedPost = [];
 List<String> addedBookmarks = [];
 
 String baseUrl() {
-  return 'https://app.waahak.com/missing-person/api';
+  //return 'https://app.waahak.com/missing-person/api';
+  //return 'http://143.110.190.118/api';
+  return 'https://mph.missingpersonhelpline.org/api';
   // return 'http://192.168.56.1/socialoo/api';
 }
 
@@ -108,7 +110,7 @@ void indicatorDialog(BuildContext context) {
       return WillPopScope(
         onWillPop: () {
           return null;
-        } as Future<bool> Function()?,
+        } as Future<bool> Function(),
         child: AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(

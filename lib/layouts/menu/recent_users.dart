@@ -494,14 +494,14 @@ class _RecentUsersState extends State<RecentUsers> {
     };
     request.headers.addAll(headers);
     request.fields['from_user'] = userID!;
-    request.fields['to_user'] = lists["id"];
+    request.fields['to_user'] = lists.id;
     var response = await request.send();
     String responseData = await response.stream.transform(utf8.decoder).join();
     var userData = json.decode(responseData);
     followModal = FollowModal.fromJson(userData);
     if (followModal.responseCode == "1") {
       setState(() {
-        globleFollowing.add(lists["id"]);
+        globleFollowing.add(lists.id);
       });
     }
   }
@@ -514,14 +514,14 @@ class _RecentUsersState extends State<RecentUsers> {
     };
     request.headers.addAll(headers);
     request.fields['from_user'] = userID!;
-    request.fields['to_user'] = lists["id"];
+    request.fields['to_user'] = lists.id;
     var response = await request.send();
     String responseData = await response.stream.transform(utf8.decoder).join();
     var userData = json.decode(responseData);
     unfollowModal = UnfollowModal.fromJson(userData);
     if (unfollowModal.responseCode == "1") {
       setState(() {
-        globleFollowing.remove(lists["id"]);
+        globleFollowing.remove(lists.id);
       });
     }
   }

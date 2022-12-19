@@ -13,6 +13,7 @@ import 'package:nb_utils/nb_utils.dart';
 // import 'package:nb_utils/src/widget_extensions.dart';
 import 'package:socialoo/global/global.dart';
 import 'package:socialoo/layouts/chat/chat.dart';
+import 'package:socialoo/layouts/homefeeds.dart';
 import 'package:socialoo/layouts/post/viewPublicPost.dart';
 import 'package:socialoo/layouts/user/myFollowers.dart';
 import 'package:socialoo/layouts/user/myFollowing.dart';
@@ -124,37 +125,100 @@ class _ProfileState extends State<PublicProfile> {
             style: Theme.of(context).textTheme.headline5!.copyWith(
                 fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white),
           ),
-          centerTitle: true,
-          automaticallyImplyLeading: true,
           actions: [
-            Container(
-              margin:
-                  const EdgeInsets.only(top: 10.0, bottom: 10.0, right: 10.0),
-              height: 38,
-              width: 120,
-              decoration: const BoxDecoration(
-                color: Color(0xffE5E6EB),
-                borderRadius: BorderRadius.all(
-                  Radius.circular(5.0),
-                ),
-              ),
-              child: const Center(
-                child: Text(
-                  'Report',
-                  textAlign: TextAlign.left,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                    letterSpacing: 0.0,
-                    color: Colors.black,
+            Row(
+              children: [
+                modal != null && modal!.user!.username != ''
+                    ? globleFollowing.contains(modal!.user!.id)
+                        ? Container(
+                            margin: EdgeInsets.only(
+                                top: 10.0, bottom: 10.0, right: 10.0),
+                            height: 38,
+                            width: (context.width() - (3 * 16)) * 0.15,
+                            decoration: BoxDecoration(
+                              color: Colors.redAccent[700],
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(5.0),
+                              ),
+                            ),
+                            child: Center(
+                                child: Image.asset(
+                                    "assets/images/block-user.png")),
+                          ).onTap(() {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return ReportDialog3(
+                                    ontap: () {
+                                      unfollowApiCall();
+                                      Navigator.pop(context);
+                                      Navigator.of(context)
+                                          .pushReplacementNamed('/Pages',
+                                              arguments: 0);
+                                    },
+                                  );
+                                });
+                          })
+                        : Container(
+                            margin: EdgeInsets.only(
+                                top: 10.0, bottom: 10.0, right: 10.0),
+                            height: 38,
+                            width: (context.width() - (3 * 16)) * 0.15,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(5.0),
+                              ),
+                            ),
+                            child: Center(
+                                child: Image.asset(
+                                    "assets/images/block-user.png")),
+                          ).onTap(() {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return ReportDialog3(
+                                    ontap: () {
+                                      unfollowApiCall();
+                                      Navigator.pop(context);
+                                      Navigator.of(context)
+                                          .pushReplacementNamed('/Pages',
+                                              arguments: 0);
+                                    },
+                                  );
+                                });
+                          })
+                    : Container(),
+                Container(
+                  margin: const EdgeInsets.only(
+                      top: 10.0, bottom: 10.0, right: 10.0),
+                  height: 35,
+                  width: 100,
+                  decoration: const BoxDecoration(
+                    color: Color(0xffE5E6EB),
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(5.0),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Report',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        letterSpacing: 0.0,
+                        color: Colors.black,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ).onTap(() {
               showDialog(
                   context: context,
                   builder: (context) {
-                    return ReportDialog();
+                    return ReportDialog2();
                   });
             })
           ],

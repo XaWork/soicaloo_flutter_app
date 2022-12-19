@@ -245,7 +245,7 @@ class _CreatePostFirstStepState extends State<CreatePostFirstStep> {
       // },
       context: context,
       initialDate: _dateTime,
-      firstDate: DateTime(now.year - 2),
+      firstDate: DateTime(now.year - 72),
       lastDate: _dateTime,
     );
     if (picked != null) {

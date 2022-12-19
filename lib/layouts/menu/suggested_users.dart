@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:nb_utils/nb_utils.dart';
 import 'package:socialoo/global/global.dart';
@@ -87,6 +88,14 @@ class _SuggestedUsersState extends State<SuggestedUsers> {
       isSearch = false;
     });
   }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    controller.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -180,7 +189,7 @@ class _SuggestedUsersState extends State<SuggestedUsers> {
                       Radius.circular(12.0),
                     ),
                   ),
-                  width: 260,
+                  width: 300,
                   height: 400,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,

@@ -414,11 +414,11 @@ class _MyHomePageState extends State<PhotoScreen> {
                           padding: const EdgeInsets.only(bottom: 0, top: 50),
                           child: alldata.length > 0
                               ? Container(
-                                  height: SizeConfig.screenWidth! * 17,
+                                  height: MediaQuery.of(context).size.height,
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      alldata.length > 0
+                                      alldata.length > 0 
                                           ? Expanded(
                                               child: ListView.builder(
                                                   scrollDirection:

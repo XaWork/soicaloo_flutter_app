@@ -97,7 +97,6 @@ class _StoriesState extends State<Stories> with SingleTickerProviderStateMixin {
                   padding: EdgeInsets.only(
                     bottom: getProportionateScreenWidth(20),
                   ),
-                  child: CircularProgressIndicator(),
                 ),
               ],
             ))

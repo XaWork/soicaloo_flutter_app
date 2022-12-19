@@ -9,6 +9,7 @@ import 'package:socialoo/global/global.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:socialoo/layouts/user/forgetPasswordChange.dart';
 import 'package:socialoo/layouts/user/forgetpass2.dart';
 import 'package:socialoo/layouts/widgets/bezier_container.dart';
 
@@ -197,7 +198,9 @@ class _ForgetPassState extends State<ForgetPass> {
     setState(() {
       isLoading = true;
     });
-    var uri = Uri.parse('${baseUrl()}/forgot_pass');
+    var uri = Uri.parse('${baseUrl()}/get_forgot_password_otp');
+    //var uri = Uri.parse(
+    //'https://app.waahak.com/missing-person/api/get_forgot_password_otp');
     var request = new http.MultipartRequest("POST", uri);
     Map<String, String> headers = {
       "Accept": "application/json",
@@ -212,11 +215,36 @@ class _ForgetPassState extends State<ForgetPass> {
     if (userData['status'] == 1) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context) => ForgetPass2(),
+          builder: (context) => PasswordChange(),
         ),
         (Route<dynamic> route) => false,
       );
-      socialootoast("Success", userData['msg'], context);
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: Text("Success"),
+                content: Text(
+                    "OTP to reset your password has been sent successfully to your email. Please verify it."),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Container(
+                      color: Colors.blue,
+                      padding: const EdgeInsets.all(14),
+                      child: const Text(
+                        "okay",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ));
+      socialootoast(
+          "Success",
+          "OTP to reset your password has been sent successfully to your email. Please verify it.",
+          context);
     } else {
       socialootoast("Error", userData['msg'], context);
     }

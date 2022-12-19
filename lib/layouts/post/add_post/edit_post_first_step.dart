@@ -609,6 +609,11 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
                               firstStepData.selectedDistrict != null &&
                               firstStepData.selectedDistrict != '') {
                             apiCall();
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(builder: (context) => NavBar()),
+                              (Route<dynamic> route) => false,
+                            );
                           } else {
                             if (firstStepData.selectedState == null ||
                                 firstStepData.selectedState == '')

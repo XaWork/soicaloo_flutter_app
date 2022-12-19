@@ -3,7 +3,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
+import 'package:blur/blur.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 // import 'package:carousel_pro/carousel_pro.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,6 +15,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:photofilters/filters/image_filters.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socialoo/Helper/sizeConfig.dart';
@@ -575,8 +578,8 @@ class _HomeFeedsState extends State<HomeFeeds>
 
   @override
   void dispose() {
-    sc.dispose();
     super.dispose();
+    sc.dispose();
   }
 
   Widget _body(BuildContext context) {
@@ -967,65 +970,128 @@ class _HomeFeedsState extends State<HomeFeeds>
             print('dataV : ${post.dataV}');
           }
         },
-        child: Stack(
-          children: [
-            Container(
-              // height: SizeConfig.blockSizeVertical * 40,
-              width: SizeConfig.screenWidth,
-              child: CachedNetworkImage(
-                imageUrl: post.allImage![0],
-                placeholder: (context, url) => Center(
-                  child: Container(child: CircularProgressIndicator()),
+        child: post.deadData != null
+            ? Blur(
+                blur: 15,
+                child: Stack(
+                  children: [
+                    Container(
+                      // height: SizeConfig.blockSizeVertical * 40,
+                      width: SizeConfig.screenWidth,
+                      child: CachedNetworkImage(
+                        imageUrl: post.allImage![0],
+                        placeholder: (context, url) => Center(
+                          child: Container(child: CircularProgressIndicator()),
+                        ),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
+                      ),
+                      // child: Swiper.children(
+                      //   autoplay: false,
+                      //   pagination: const SwiperPagination(
+                      //       margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 30.0),
+                      //       builder: DotSwiperPaginationBuilder(
+                      //           color: Colors.white30,
+                      //           activeColor: Colors.white,
+                      //           size: 20.0,
+                      //           activeSize: 20.0)),
+                      //   children: post.allImage!.map((it) {
+                      //     return ClipRRect(
+                      //       child: ZoomOverlay(
+                      //         twoTouchOnly: true,
+                      //         child: CachedNetworkImage(
+                      //           imageUrl: it,
+                      //           imageBuilder: (context, imageProvider) => Container(
+                      //             decoration: BoxDecoration(
+                      //               image: DecorationImage(
+                      //                 image: imageProvider,
+                      //                 fit: BoxFit.contain,
+                      //               ),
+                      //             ),
+                      //           ),
+                      //           placeholder: (context, url) => Center(
+                      //             child: Container(child: CircularProgressIndicator()),
+                      //           ),
+                      //           errorWidget: (context, url, error) => Icon(Icons.error),
+                      //           fit: BoxFit.cover,
+                      //         ),
+                      //       ),
+                      //     );
+                      //   }).toList(),
+                      // ),
+                    ),
+                    post.dataV == true
+                        ? Positioned.fill(
+                            child: AnimatedOpacity(
+                                opacity: post.dataV! ? 1.0 : 0.0,
+                                duration: Duration(milliseconds: 700),
+                                child: Icon(
+                                  CupertinoIcons.heart_fill,
+                                  color: Colors.red,
+                                  size: 100,
+                                )))
+                        : Container(),
+                  ],
                 ),
-                errorWidget: (context, url, error) => Icon(Icons.error),
+              )
+            : Stack(
+                children: [
+                  Container(
+                    // height: SizeConfig.blockSizeVertical * 40,
+                    width: SizeConfig.screenWidth,
+                    child: CachedNetworkImage(
+                      imageUrl: post.allImage![0],
+                      placeholder: (context, url) => Center(
+                        child: Container(child: CircularProgressIndicator()),
+                      ),
+                      errorWidget: (context, url, error) => Icon(Icons.error),
+                    ),
+                    // child: Swiper.children(
+                    //   autoplay: false,
+                    //   pagination: const SwiperPagination(
+                    //       margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 30.0),
+                    //       builder: DotSwiperPaginationBuilder(
+                    //           color: Colors.white30,
+                    //           activeColor: Colors.white,
+                    //           size: 20.0,
+                    //           activeSize: 20.0)),
+                    //   children: post.allImage!.map((it) {
+                    //     return ClipRRect(
+                    //       child: ZoomOverlay(
+                    //         twoTouchOnly: true,
+                    //         child: CachedNetworkImage(
+                    //           imageUrl: it,
+                    //           imageBuilder: (context, imageProvider) => Container(
+                    //             decoration: BoxDecoration(
+                    //               image: DecorationImage(
+                    //                 image: imageProvider,
+                    //                 fit: BoxFit.contain,
+                    //               ),
+                    //             ),
+                    //           ),
+                    //           placeholder: (context, url) => Center(
+                    //             child: Container(child: CircularProgressIndicator()),
+                    //           ),
+                    //           errorWidget: (context, url, error) => Icon(Icons.error),
+                    //           fit: BoxFit.cover,
+                    //         ),
+                    //       ),
+                    //     );
+                    //   }).toList(),
+                    // ),
+                  ),
+                  post.dataV == true
+                      ? Positioned.fill(
+                          child: AnimatedOpacity(
+                              opacity: post.dataV! ? 1.0 : 0.0,
+                              duration: Duration(milliseconds: 700),
+                              child: Icon(
+                                CupertinoIcons.heart_fill,
+                                color: Colors.red,
+                                size: 100,
+                              )))
+                      : Container(),
+                ],
               ),
-              // child: Swiper.children(
-              //   autoplay: false,
-              //   pagination: const SwiperPagination(
-              //       margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 30.0),
-              //       builder: DotSwiperPaginationBuilder(
-              //           color: Colors.white30,
-              //           activeColor: Colors.white,
-              //           size: 20.0,
-              //           activeSize: 20.0)),
-              //   children: post.allImage!.map((it) {
-              //     return ClipRRect(
-              //       child: ZoomOverlay(
-              //         twoTouchOnly: true,
-              //         child: CachedNetworkImage(
-              //           imageUrl: it,
-              //           imageBuilder: (context, imageProvider) => Container(
-              //             decoration: BoxDecoration(
-              //               image: DecorationImage(
-              //                 image: imageProvider,
-              //                 fit: BoxFit.contain,
-              //               ),
-              //             ),
-              //           ),
-              //           placeholder: (context, url) => Center(
-              //             child: Container(child: CircularProgressIndicator()),
-              //           ),
-              //           errorWidget: (context, url, error) => Icon(Icons.error),
-              //           fit: BoxFit.cover,
-              //         ),
-              //       ),
-              //     );
-              //   }).toList(),
-              // ),
-            ),
-            post.dataV == true
-                ? Positioned.fill(
-                    child: AnimatedOpacity(
-                        opacity: post.dataV! ? 1.0 : 0.0,
-                        duration: Duration(milliseconds: 700),
-                        child: Icon(
-                          CupertinoIcons.heart_fill,
-                          color: Colors.red,
-                          size: 100,
-                        )))
-                : Container(),
-          ],
-        ),
       );
     } else if (isvideo) {
       return InkWell(

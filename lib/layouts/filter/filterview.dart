@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:blur/blur.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:csc_picker/csc_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -12,6 +13,8 @@ import 'package:nb_utils/nb_utils.dart';
 import 'package:share/share.dart';
 import 'package:socialoo/global/global.dart';
 import 'package:socialoo/layouts/chat/chat.dart';
+import 'package:socialoo/layouts/filter/searchpostmodel.dart';
+import 'package:socialoo/layouts/user/google_sign_in.dart';
 import 'package:socialoo/layouts/user/publicProfile.dart';
 import 'package:socialoo/models/intrest_model.dart';
 import 'package:socialoo/models/postFollowModal.dart';
@@ -43,6 +46,9 @@ class _FilterViewState extends State<FilterView> {
   IntrestModel? intrestModel;
   bool isSearch = false;
 
+  int? page = 1;
+  bool pageloader = false;
+
   // bool isSearchData = false;
   bool clearData = false;
   String? stateValue;
@@ -57,6 +63,8 @@ class _FilterViewState extends State<FilterView> {
     'Female',
     'Other',
   ];
+
+  double? _height, _width, _fixedPadding;
 
   // String? dropDownSelectedUser;
   // var dropDownUserList = ['People', 'User'];
@@ -89,7 +97,7 @@ class _FilterViewState extends State<FilterView> {
     super.initState();
     // dropDownSelectedUser = dropDownUserList[0];
     formType = formTypeList[1];
-    _getserchedPost();
+    searchedPost();
   }
 
   // _getTopUser() async {
@@ -114,13 +122,71 @@ class _FilterViewState extends State<FilterView> {
   //     isSearch = false;
   //   });
   // }
-
   List<Post> allPost = <Post>[];
   FollowerPostModal? modal;
 
   SearchUserModel userData = SearchUserModel();
+  var homedata = true;
 
   // List<SearchUserModel> usersList = <SearchUserModel>[];
+  int pageNum = 1;
+  bool isPageLoading = false;
+  List<SearchPost> dataList = [];
+  ScrollController _scrollController = ScrollController();
+  int totalRecord = 0;
+
+  Future<List<SearchPost>> searchedPost() async {
+    setState(() {
+      isSearch = true;
+      homedata = false;
+    });
+
+    log("searching post");
+    try {
+      final response = await client
+          .post(Uri.parse('${baseUrl()}/search_post?skip=0&limit=10'), body: {
+        'user_id': userID ?? '',
+        'search_type': formType?.toLowerCase() ?? '',
+        'text': controller.text,
+        'name': (formType == 'Missing' ||
+                formType == 'People' ||
+                formType == 'Dead')
+            ? controller.text
+            : '',
+        'gender': gender ?? '',
+        'date_from': fromDate ?? '',
+        'date_to': toDate ?? '',
+        'country': 'india',
+        'state': stateValue ?? '',
+        'city': cityValue ?? '',
+        "age": '${startAge.round().toString()}-${endAge.round().toString()}'
+      });
+      print(response.body);
+      if (response.statusCode == 200) {
+        print("success");
+        dataList.clear();
+        print("cleared");
+        final data = jsonDecode(response.body)['post'];
+        print("decoded");
+        for (var each in data) {
+          dataList.add(SearchPost.fromJson(each));
+        }
+        print(data[1]);
+        print("data added");
+        print(dataList);
+        print(dataList.length);
+      } else {
+        log(response..statusCode.toString());
+      }
+      print("saved data");
+    } catch (e) {
+      log("unable to fetch post");
+    }
+    setState(() {
+      isSearch = false;
+    });
+    return dataList;
+  }
 
   _getserchedPost() async {
     print('asdfgjhgfd');
@@ -196,6 +262,7 @@ class _FilterViewState extends State<FilterView> {
     closeKeyboard();
     setState(() {
       isSearch = true;
+      homedata = true;
     });
     var uri = Uri.parse('${baseUrl()}/users_filter');
     var request = new http.MultipartRequest("POST", uri);
@@ -248,7 +315,7 @@ class _FilterViewState extends State<FilterView> {
       // },
       context: context,
       initialDate: DateTime(now.year, now.month, now.day - 1),
-      firstDate: DateTime(now.year - 2),
+      firstDate: DateTime(now.year - 72),
       lastDate: DateTime(now.year, now.month, now.day - 1),
     );
     if (picked != null) {
@@ -303,51 +370,429 @@ class _FilterViewState extends State<FilterView> {
   Widget build(BuildContext context) {
     // SizeConfig().init(context);
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        elevation: 0.5,
-        title: Text(
-          "Search",
-          style: Theme.of(context).textTheme.headline5!.copyWith(
-              fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+          elevation: 0.5,
+          title: Text(
+            "Search",
+            style: Theme.of(context).textTheme.headline5!.copyWith(
+                fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white),
+          ),
+          iconTheme: IconThemeData(
+            color: Theme.of(context).appBarTheme.iconTheme!.color,
+          ),
+          leading: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: Icon(Icons.arrow_back_ios)),
         ),
-        iconTheme: IconThemeData(
-          color: Theme.of(context).appBarTheme.iconTheme!.color,
-        ),
-        leading: IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: Icon(Icons.arrow_back_ios)),
-      ),
-      body: isLoading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : CustomScrollView(
-              primary: true,
-              slivers: <Widget>[
-                SliverAppBar(
-                  backgroundColor: Colors.transparent,
-                  expandedHeight: 400,
-                  elevation: 0,
-                  leading: SizedBox.shrink(),
-                  flexibleSpace: FlexibleSpaceBar(
-                      collapseMode: CollapseMode.parallax,
-                      background: filterWidget(context)),
-                ),
-                SliverToBoxAdapter(
-                    child: Wrap(
-                  runSpacing: 0,
+        body: isLoading
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : SingleChildScrollView(
+                child: Column(
                   children: [
+                    filterWidget(context),
                     isSearch == true
                         ? SizedBox(
                             height: 100,
                             child: Center(child: CupertinoActivityIndicator()))
-                        : _serachuser(),
+                        : homedata
+                            ? _serachuser()
+                            : searchBody(),
                   ],
-                )),
-              ],
-            ),
+                ),
+              ));
+  }
+
+  Widget searchBody() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ListView.builder(
+          scrollDirection: Axis.vertical,
+          physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          primary: false,
+          itemCount: dataList.length,
+          itemBuilder: ((context, index) {
+            return Card(
+              child: Container(
+                  child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      print('asdfghjsdfg');
+                      if (userID == dataList[index].userId) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Profile(back: true)),
+                        );
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => PublicProfile(
+                                    peerId: dataList[index].userId,
+                                    peerUrl: dataList[index].profilePic,
+                                    peerName: dataList[index].username,
+                                  )),
+                        );
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0, left: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(30.0),
+                                child: dataList[index].profilePic == null ||
+                                        dataList[index].profilePic!.isEmpty
+                                    ? Container(
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF003a54),
+                                          borderRadius:
+                                              BorderRadius.circular(30.0),
+                                        ),
+                                        child: Image.asset(
+                                          'assets/images/defaultavatar.png',
+                                          width: 55,
+                                          height: 55,
+                                        ),
+                                      )
+                                    : CachedNetworkImage(
+                                        imageUrl: dataList[index]
+                                            .profilePic
+                                            .toString(),
+                                        height: 55.0,
+                                        width: 55.0,
+                                        fit: BoxFit.cover,
+                                      ),
+                              ),
+                              SizedBox(
+                                width:
+                                    (MediaQuery.of(context).size.width / 100) *
+                                        2,
+                              ),
+                              Row(
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        dataList[index].username.toString(),
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      Text(
+                                        format(
+                                            DateTime.fromMillisecondsSinceEpoch(
+                                                int.parse(dataList[index]
+                                                    .createDate!)),
+                                            locale: 'en_short'),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .caption!
+                                            .copyWith(
+                                              fontSize: 12.0,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 05),
+                            child: Column(
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    reportPostData = null;
+                                    reportSheet(
+                                      context,
+                                      dataList[index].postId,
+                                      dataList[index].bookmark,
+                                      dataList[index].userId,
+                                    );
+                                  },
+                                  icon: Icon(Icons.more_horiz),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  dataList[index].text != ""
+                      ? Padding(
+                          padding: const EdgeInsets.only(left: 5),
+                          child: Text('${dataList[index].text}'))
+                      : Container(),
+                  SizedBox(height: 10),
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                ViewPublicPost(id: dataList[index].postId)),
+                      );
+                    },
+                    child: Container(
+                      // height: (MediaQuery.of(context).size.height / 100) * 40,
+                      width: MediaQuery.of(context).size.width,
+                      child: dataList[index].deadData != null
+                          ? CachedNetworkImage(
+                              imageUrl: dataList[index].allImage![0],
+                              placeholder: (context, url) => Center(
+                                child: Container(
+                                    child: CircularProgressIndicator()),
+                              ),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.error),
+                            ).blurred(blur: 20)
+                          : CachedNetworkImage(
+                              imageUrl: dataList[index].allImage![0],
+                              placeholder: (context, url) => Center(
+                                child: Container(
+                                    child: CircularProgressIndicator()),
+                              ),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.error),
+                            ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  if (dataList[index].missingData != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                      child: Text(
+                        'Missing Person ${dataList[index].missingData?.fullName ?? ''}, ${dataList[index].missingData?.gender ?? ''}, ${dataList[index].missingData?.age ?? ''} Year old, ${dataList[index].missingData?.dateMissing ?? ''}',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  if (dataList[index].deadData != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                      child: Text(
+                        'Dead Person ${dataList[index].deadData?.fullName ?? ''}, ${dataList[index].deadData?.gender ?? ''}, ${dataList[index].deadData?.age ?? ''} Year old, ${dataList[index].deadData?.dateFound ?? ''}',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  if (dataList[index].foundData != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                      child: Text(
+                        'Found Person ${dataList[index].foundData?.fullName ?? ''}, ${dataList[index].foundData?.gender ?? ''}, ${dataList[index].foundData?.age ?? ''} Year old, ${dataList[index].foundData?.date ?? ''}',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  SizedBox(height: 10),
+                  Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                Text(
+                                  '${dataList[index].totalLikes.toString()} Likes',
+                                  style: TextStyle(
+                                    fontSize: 14.0,
+                                    color: Theme.of(context).iconTheme.color,
+                                  ),
+                                ),
+                                const SizedBox(width: 5.0),
+                              ],
+                            ),
+                            Row(
+                              children: <Widget>[
+                                GestureDetector(
+                                  child: Row(
+                                    children: [
+                                      InkWell(
+                                        onTap: () async {
+                                          int? commentL = await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    CommentsScreen(
+                                                        postID: dataList[index]
+                                                            .postId)),
+                                          );
+                                          if (commentL != null) {
+                                            setState(() {
+                                              dataList[index].totalComments =
+                                                  commentL;
+                                            });
+                                          }
+                                        },
+                                        child: Text(
+                                          dataList[index]
+                                                  .totalComments
+                                                  .toString() +
+                                              " Comments",
+                                          style: TextStyle(
+                                            fontSize: 14.0,
+                                            color: Theme.of(context)
+                                                .iconTheme
+                                                .color,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 5.0),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Divider(height: 25.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              dataList[index].isLikes == "true"
+                                  ? InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          dataList[index].isLikes = "false";
+                                          dataList[index].totalLikes =
+                                              dataList[index].totalLikes! - 1;
+                                          _unlikePost(dataList[index].postId!);
+                                        });
+                                        print("Unlike Post");
+                                      },
+                                      child: Icon(
+                                        CupertinoIcons.heart_fill,
+                                        size: 20,
+                                        color: Colors.red,
+                                      ),
+                                    )
+                                  : InkWell(
+                                      onTap: () {
+                                        print("Like Post");
+                                        setState(() {
+                                          dataList[index].totalLikes =
+                                              dataList[index].totalLikes! + 1;
+                                          dataList[index].isLikes = "true";
+                                          _likePost(dataList[index].postId!);
+                                        });
+                                      },
+                                      child: Icon(
+                                        CupertinoIcons.heart,
+                                        color:
+                                            Theme.of(context).iconTheme.color,
+                                        size: 20,
+                                      ),
+                                    ),
+                              SizedBox(
+                                width: 5,
+                              ),
+                              CustomTextStyle1(
+                                title: ' Like',
+                                weight: FontWeight.w500,
+                                color: Theme.of(context).iconTheme.color,
+                              ),
+                              SizedBox(width: 5.0),
+                            ],
+                          ),
+                          Row(
+                            children: <Widget>[
+                              GestureDetector(
+                                  onTap: () async {
+                                    int? commentL = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => CommentsScreen(
+                                              postID: dataList[index].postId)),
+                                    );
+
+                                    if (commentL != null) {
+                                      setState(() {
+                                        dataList[index].totalComments =
+                                            commentL;
+                                      });
+                                    }
+                                  },
+                                  child: Row(
+                                    children: [
+                                      SvgPicture.asset(
+                                        "assets/images/comment.svg",
+                                        height: 20,
+                                        color:
+                                            Theme.of(context).iconTheme.color,
+                                      ),
+                                      const SizedBox(width: 5.0),
+                                      Text('Comment',
+                                          style: TextStyle(
+                                            fontSize: 14.0,
+                                            color: Theme.of(context)
+                                                .iconTheme
+                                                .color,
+                                          )),
+                                    ],
+                                  )),
+                              const SizedBox(width: 5.0),
+                            ],
+                          ),
+                          Row(
+                            children: <Widget>[
+                              GestureDetector(
+                                onTap: () {
+                                  chooseShareOption(context, dataList[index]);
+                                },
+                                child: Row(
+                                  children: [
+                                    SvgPicture.asset(
+                                      "assets/images/share.svg",
+                                      height: 20,
+                                      color: Theme.of(context).iconTheme.color,
+                                    ),
+                                    const SizedBox(width: 5.0),
+                                    Text(
+                                      'Share',
+                                      style: TextStyle(
+                                        fontSize: 14.0,
+                                        color:
+                                            Theme.of(context).iconTheme.color,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 5.0),
+                            ],
+                          )
+                        ],
+                      ),
+                      const Padding(padding: EdgeInsets.only(bottom: 10.0))
+                    ],
+                  )
+                ],
+              )),
+            );
+          })),
     );
   }
 
@@ -677,7 +1122,9 @@ class _FilterViewState extends State<FilterView> {
           SizedBox(height: 5),
           Row(
             children: [
-              if ((formType == 'Missing' || formType == 'People'))
+              if ((formType == 'Missing' ||
+                  formType == 'People' ||
+                  formType == 'Dead'))
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(right: 10),
@@ -976,11 +1423,8 @@ class _FilterViewState extends State<FilterView> {
                       //     toDate != '' &&
                       //     fromDate != null &&
                       //     fromDate != '') {
-                      setState(() {
-                        isSearch = true;
-                        allPost = <Post>[];
-                      });
-                      _getserchedPost();
+                      //_getserchedPost(page);
+                      searchedPost();
                       // } else {
                       //   socialootoast(
                       //       "Error", "All fields are mandatory", context);
@@ -1105,7 +1549,6 @@ class _FilterViewState extends State<FilterView> {
               InkWell(
                 onTap: () {
                   print('asdfghjsdfg');
-
                   if (userID == post.userId) {
                     Navigator.push(
                       context,
@@ -1335,7 +1778,7 @@ class _FilterViewState extends State<FilterView> {
     }
   }
 
-  postContentWidget(Post post) {
+  postContentWidget(post) {
     bool isimage = post.allImage!.length > 0;
     bool isvideo = post.video != "";
     bool ispdf = post.pdf != "";
@@ -1373,13 +1816,21 @@ class _FilterViewState extends State<FilterView> {
             Container(
               // height: (MediaQuery.of(context).size.height / 100) * 40,
               width: MediaQuery.of(context).size.width,
-              child: CachedNetworkImage(
-                imageUrl: post.allImage![0],
-                placeholder: (context, url) => Center(
-                  child: Container(child: CircularProgressIndicator()),
-                ),
-                errorWidget: (context, url, error) => Icon(Icons.error),
-              ),
+              child: post.deadData != null
+                  ? CachedNetworkImage(
+                      imageUrl: post.allImage![0],
+                      placeholder: (context, url) => Center(
+                        child: Container(child: CircularProgressIndicator()),
+                      ),
+                      errorWidget: (context, url, error) => Icon(Icons.error),
+                    ).blurred(blur: 20)
+                  : CachedNetworkImage(
+                      imageUrl: post.allImage![0],
+                      placeholder: (context, url) => Center(
+                        child: Container(child: CircularProgressIndicator()),
+                      ),
+                      errorWidget: (context, url, error) => Icon(Icons.error),
+                    ),
               // child: Swiper.children(
               //   autoplay: false,
               //   pagination: const SwiperPagination(
@@ -1509,7 +1960,7 @@ class _FilterViewState extends State<FilterView> {
     }
   }
 
-  footerWidget(Post post) {
+  footerWidget(post) {
     return Column(
       children: [
         Padding(
@@ -1683,7 +2134,7 @@ class _FilterViewState extends State<FilterView> {
     );
   }
 
-  chooseShareOption(BuildContext context, Post post) {
+  chooseShareOption(BuildContext context, post) {
     showModalBottomSheet(
       isScrollControlled: true,
       shape: RoundedRectangleBorder(
