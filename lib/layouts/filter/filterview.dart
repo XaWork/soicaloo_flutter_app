@@ -14,7 +14,6 @@ import 'package:share/share.dart';
 import 'package:socialoo/global/global.dart';
 import 'package:socialoo/layouts/chat/chat.dart';
 import 'package:socialoo/layouts/filter/searchpostmodel.dart';
-import 'package:socialoo/layouts/user/google_sign_in.dart';
 import 'package:socialoo/layouts/user/publicProfile.dart';
 import 'package:socialoo/models/intrest_model.dart';
 import 'package:socialoo/models/postFollowModal.dart';
@@ -40,16 +39,13 @@ class _FilterViewState extends State<FilterView> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController controller = new TextEditingController();
 
-  // ignore: unused_field
-  String? _categoryValue;
   String? categoryName;
   IntrestModel? intrestModel;
-  bool isSearch = false;
+  bool isSearch = true;
 
   int? page = 1;
   bool pageloader = false;
 
-  // bool isSearchData = false;
   bool clearData = false;
   String? stateValue;
   String? cityValue;
@@ -64,10 +60,6 @@ class _FilterViewState extends State<FilterView> {
     'Other',
   ];
 
-  double? _height, _width, _fixedPadding;
-
-  // String? dropDownSelectedUser;
-  // var dropDownUserList = ['People', 'User'];
   String? formType;
   var formTypeList = ['Found', 'Missing', 'Dead', 'People'];
   var formTypeList2 = [
@@ -83,68 +75,39 @@ class _FilterViewState extends State<FilterView> {
 
   bool isLoading = false;
 
-  // var userData;
   Map<String, dynamic>? serchedUserData;
   late FollowModal followModal;
   late UnfollowModal unfollowModal;
 
-  // List userList = [];
+  List<SearchPost> dataList = [];
+
+  int _skip = 0;
+  final _scrollController = ScrollController();
 
   @override
   void initState() {
-    // _getintrest();
-
-    super.initState();
-    // dropDownSelectedUser = dropDownUserList[0];
     formType = formTypeList[1];
+    _scrollController.addListener(_scrollListener);
     searchedPost();
+    super.initState();
   }
 
-  // _getTopUser() async {
-  //   setState(() {
-  //     isSearch = true;
-  //   });
-  //   var uri = Uri.parse('${baseUrl()}/get_all_users');
-  //   var request = new http.MultipartRequest("POST", uri);
-  //   Map<String, String> headers = {
-  //     "Accept": "application/json",
-  //   };
-  //   request.headers.addAll(headers);
-  //   request.fields['user_id'] = userID!;
-  //   var response = await request.send();
-  //   print(response.statusCode);
-  //   String responseData = await response.stream.transform(utf8.decoder).join();
-  //   userData = json.decode(responseData);
-  //   print('???????????');
-  //   print(userData);
-  //
-  //   setState(() {
-  //     isSearch = false;
-  //   });
-  // }
   List<Post> allPost = <Post>[];
   FollowerPostModal? modal;
 
   SearchUserModel userData = SearchUserModel();
   var homedata = true;
 
-  // List<SearchUserModel> usersList = <SearchUserModel>[];
-  int pageNum = 1;
-  bool isPageLoading = false;
-  List<SearchPost> dataList = [];
-  ScrollController _scrollController = ScrollController();
-  int totalRecord = 0;
-
   Future<List<SearchPost>> searchedPost() async {
     setState(() {
-      isSearch = true;
       homedata = false;
     });
-
-    log("searching post");
+    print("Skip =====> ${_skip.toString()}");
+    print("Searching Post ----> Please Wait....");
     try {
-      final response = await client
-          .post(Uri.parse('${baseUrl()}/search_post?skip=0&limit=10'), body: {
+      List<SearchPost> initDataList = [];
+      final response =
+          await client.post(Uri.parse('${baseUrl()}/search_post'), body: {
         'user_id': userID ?? '',
         'search_type': formType?.toLowerCase() ?? '',
         'text': controller.text,
@@ -159,26 +122,29 @@ class _FilterViewState extends State<FilterView> {
         'country': 'india',
         'state': stateValue ?? '',
         'city': cityValue ?? '',
-        "age": '${startAge.round().toString()}-${endAge.round().toString()}'
+        "age": '${startAge.round().toString()}-${endAge.round().toString()}',
+        'limit': "10",
+        "skip": _skip.toString(),
       });
       print(response.body);
       if (response.statusCode == 200) {
-        print("success");
-        dataList.clear();
-        print("cleared");
+        print("API Response ----> Success!");
+        initDataList.clear();
+        print("Initial DataList ----> Cleared");
         final data = jsonDecode(response.body)['post'];
-        print("decoded");
+        print("Data ----> Fetched");
         for (var each in data) {
-          dataList.add(SearchPost.fromJson(each));
+          initDataList.add(SearchPost.fromJson(each));
         }
+        dataList = dataList + initDataList;
         print(data[1]);
-        print("data added");
+        print("Data ----> Added to the DataList!");
         print(dataList);
         print(dataList.length);
       } else {
         log(response..statusCode.toString());
       }
-      print("saved data");
+      print("Search ----> Complete");
     } catch (e) {
       log("unable to fetch post");
     }
@@ -186,6 +152,16 @@ class _FilterViewState extends State<FilterView> {
       isSearch = false;
     });
     return dataList;
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      _skip = _skip + 10;
+      print("Search API ======> Calling");
+      searchedPost();
+      print("Search API ======> Called");
+    }
   }
 
   _getserchedPost() async {
@@ -221,11 +197,8 @@ class _FilterViewState extends State<FilterView> {
     print(response.statusCode);
 
     if (response.statusCode == 200) {
-      // print(await response.stream.bytesToString());
-      // serchedUserData = json.decode(await response.stream.bytesToString());
       modal = FollowerPostModal.fromJson(
           json.decode(await response.stream.bytesToString()));
-      // print(modal!.post!.length);
       print('asdfgjhgfd');
 
       setState(() {
@@ -241,23 +214,6 @@ class _FilterViewState extends State<FilterView> {
     }
   }
 
-  // void func(page1) async {
-  //   int? value = page1 + 10;
-  //   int noValue = page1;
-  //   if (modal!.responseCode != '0') {
-  //     print('if');
-  //     setState(() {
-  //       page = value;
-  //       pageloader = true;
-  //     });
-  //   } else {
-  //     setState(() {
-  //       page = noValue;
-  //       pageloader = false;
-  //     });
-  //   }
-  // }
-
   _getserchedUser() async {
     closeKeyboard();
     setState(() {
@@ -270,8 +226,6 @@ class _FilterViewState extends State<FilterView> {
       "Accept": "application/json",
     };
     request.headers.addAll(headers);
-    // request.fields['interests_id'] =
-    //     _categoryValue != null ? _categoryValue.toString() : '';
     request.fields['name'] = controller.text.toLowerCase();
     request.fields['country'] = 'India';
     request.fields['age'] =
@@ -290,8 +244,6 @@ class _FilterViewState extends State<FilterView> {
     print(serchedUserData);
     if (serchedUserData!['response_code'] == '1') {
       userData = SearchUserModel.fromJson(serchedUserData!);
-      // usersList.addAll(List<SearchUserModel>.from(serchedUserData!['users']
-      //     .map((item) => SearchUserModel.fromJson(item))));
     }
 
     setState(() {
@@ -305,14 +257,6 @@ class _FilterViewState extends State<FilterView> {
     var myFormat = DateFormat('dd-MM-yyyy') /*.add_yMd()*/;
     String dateString;
     final DateTime? picked = await showDatePicker(
-      // builder: (BuildContext context, Widget? child) {
-      //   return Theme(
-      //     data: ThemeData.light().copyWith(
-      //       colorScheme: ColorScheme.light(primary: themeBlueColor),
-      //     ),
-      //     child: child,
-      //   );
-      // },
       context: context,
       initialDate: DateTime(now.year, now.month, now.day - 1),
       firstDate: DateTime(now.year - 72),
@@ -333,22 +277,10 @@ class _FilterViewState extends State<FilterView> {
       int.parse(fromDate!.substring(6, 10)),
       int.parse(fromDate!.substring(3, 5)),
       int.parse(fromDate!.substring(0, 2)),
-
-      // int.parse(fromDate!.substring(0, 4)),
-      // int.parse(fromDate!.substring(5, 7)),
-      // int.parse(fromDate!.substring(8, 10))
     );
     var myFormat = DateFormat('dd-MM-yyyy') /*.add_yMd()*/;
     String dateString;
     final DateTime? picked = await showDatePicker(
-      // builder: (BuildContext context, Widget? child) {
-      //   return Theme(
-      //     data: ThemeData.light().copyWith(
-      //       colorScheme: ColorScheme.light(primary: themeBlueColor),
-      //     ),
-      //     child: child,
-      //   );
-      // },
       context: context,
       initialDate: DateTime(
         int.parse(fromDate!.substring(6, 10)),
@@ -368,7 +300,6 @@ class _FilterViewState extends State<FilterView> {
 
   @override
   Widget build(BuildContext context) {
-    // SizeConfig().init(context);
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
@@ -391,6 +322,7 @@ class _FilterViewState extends State<FilterView> {
                 child: CircularProgressIndicator(),
               )
             : SingleChildScrollView(
+                controller: _scrollController,
                 child: Column(
                   children: [
                     filterWidget(context),
@@ -806,10 +738,6 @@ class _FilterViewState extends State<FilterView> {
               userData.users.isNotEmpty)
             ListView.builder(
               primary: false,
-              // gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              //     crossAxisCount: 2,
-              //     // childAspectRatio: 200 / 200,
-              //     crossAxisSpacing: 5),
               itemCount: userData.users.length,
               physics: NeverScrollableScrollPhysics(),
               shrinkWrap: true,
@@ -1165,7 +1093,6 @@ class _FilterViewState extends State<FilterView> {
                     ),
                   ),
                 ),
-              // Container(width: 10),
               Expanded(
                 child: Container(
                   height: 43,
@@ -1412,23 +1339,11 @@ class _FilterViewState extends State<FilterView> {
                       });
                       _getserchedUser();
                     } else {
-                      // if (controller.text != '' &&
-                      //     gender != null &&
-                      //     gender != '' &&
-                      //     stateValue != null &&
-                      //     stateValue != '' &&
-                      //     cityValue != null &&
-                      //     cityValue != '' &&
-                      //     toDate != null &&
-                      //     toDate != '' &&
-                      //     fromDate != null &&
-                      //     fromDate != '') {
-                      //_getserchedPost(page);
+                      setState(() {
+                        isSearch = true;
+                      });
                       searchedPost();
-                      // } else {
-                      //   socialootoast(
-                      //       "Error", "All fields are mandatory", context);
-                      // }
+                      dataList.clear();
                     }
                   },
                 ),
@@ -1536,8 +1451,6 @@ class _FilterViewState extends State<FilterView> {
       });
     }
   }
-
-  //////////////////
 
   var reportPostData;
 
@@ -1690,61 +1603,6 @@ class _FilterViewState extends State<FilterView> {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
-
-              // if (post.missingData != null)
-              //   Padding(
-              //     padding: const EdgeInsets.symmetric(horizontal: 10.0),
-              //     child: Row(
-              //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //       children: [
-              //         Text('${post.missingData?.fullName ?? ''}',
-              //             style: TextStyle(
-              //                 fontSize: 14,
-              //                 color: Theme.of(context).iconTheme.color)),
-              //         Text(
-              //             '${post.missingData?.age} Y / ${post.missingData?.gender}',
-              //             style: TextStyle(
-              //                 fontSize: 14,
-              //                 color: Theme.of(context).iconTheme.color)),
-              //       ],
-              //     ),
-              //   ),
-
-              // if (post.deadData != null)
-              //   Padding(
-              //     padding: const EdgeInsets.symmetric(horizontal: 10.0),
-              //     child: Row(
-              //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //       children: [
-              //         Text('${post.deadData?.fullName ?? ''}',
-              //             style: TextStyle(
-              //                 fontSize: 14,
-              //                 color: Theme.of(context).iconTheme.color)),
-              //         Text('${post.deadData?.age} Y / ${post.deadData?.gender}',
-              //             style: TextStyle(
-              //                 fontSize: 14,
-              //                 color: Theme.of(context).iconTheme.color)),
-              //       ],
-              //     ),
-              //   ),
-              // if (post.missingData != null)
-              //   Padding(
-              //     padding: const EdgeInsets.only(left: 10.0, top: 10),
-              //     child: Text('${post.missingData?.dateMissing ?? ''}',
-              //         style: TextStyle(
-              //             fontSize: 14,
-              //             color: Theme.of(context).iconTheme.color)),
-              //   ),
-              // if (post.deadData != null)
-              //   Padding(
-              //     padding: const EdgeInsets.only(left: 10.0, top: 10),
-              //     child: Text('${post.deadData?.dateFound ?? ''}',
-              //         style: TextStyle(
-              //             fontSize: 14,
-              //             color: Theme.of(context).iconTheme.color)),
-              //   ),
-              // if (post.missingData != null || post.deadData != null)
-              //   const Divider(height: 30.0),
               SizedBox(height: 10),
               footerWidget(post),
             ],
@@ -1814,7 +1672,6 @@ class _FilterViewState extends State<FilterView> {
         child: Stack(
           children: [
             Container(
-              // height: (MediaQuery.of(context).size.height / 100) * 40,
               width: MediaQuery.of(context).size.width,
               child: post.deadData != null
                   ? CachedNetworkImage(
@@ -1831,41 +1688,6 @@ class _FilterViewState extends State<FilterView> {
                       ),
                       errorWidget: (context, url, error) => Icon(Icons.error),
                     ),
-              // child: Swiper.children(
-              //   autoplay: false,
-              //   pagination: const SwiperPagination(
-              //       margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 30.0),
-              //       builder: DotSwiperPaginationBuilder(
-              //           color: Colors.white30,
-              //           activeColor: Colors.white,
-              //           size: 20.0,
-              //           activeSize: 20.0)),
-              //   children: post.allImage!.map((it) {
-              //     return ClipRRect(
-              //       child: ZoomOverlay(
-              //         twoTouchOnly: true,
-              //         child: CachedNetworkImage(
-              //           imageUrl: it,
-              //           imageBuilder: (context, imageProvider) => Container(
-              //             decoration: BoxDecoration(
-              //               image: DecorationImage(
-              //                 image: imageProvider,
-              //                 fit: BoxFit.contain,
-              //               ),
-              //             ),
-              //           ),
-              //           placeholder: (context, url) => Center(
-              //             child:
-              //                 Container(child: CircularProgressIndicator()),
-              //           ),
-              //           errorWidget: (context, url, error) =>
-              //               Icon(Icons.error),
-              //           fit: BoxFit.cover,
-              //         ),
-              //       ),
-              //     );
-              //   }).toList(),
-              // ),
             ),
             post.dataV == true
                 ? Positioned.fill(
