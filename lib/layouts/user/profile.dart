@@ -49,6 +49,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     _getUser();
+    _getPost();
     super.initState();
   }
 

@@ -49,6 +49,7 @@ class _ProfileState extends State<PublicProfile> {
     // print(widget.peerId + ">>>>>>>>>>");
     print(userID! + ' User Id');
     _getUser();
+    _getPost();
     super.initState();
   }
 

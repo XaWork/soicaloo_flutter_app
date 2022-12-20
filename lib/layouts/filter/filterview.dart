@@ -99,11 +99,13 @@ class _FilterViewState extends State<FilterView> {
   var homedata = true;
 
   Future<List<SearchPost>> searchedPost() async {
+    print("Searching Post From =======> $fromDate to $toDate");
+    print(
+        "Other Details for Searching ==> Age - ${startAge.round().toString()} to ${endAge.round().toString()}");
     setState(() {
       homedata = false;
     });
     print("Skip =====> ${_skip.toString()}");
-    print("Searching Post ----> Please Wait....");
     try {
       List<SearchPost> initDataList = [];
       final response =
@@ -126,13 +128,14 @@ class _FilterViewState extends State<FilterView> {
         'limit': "10",
         "skip": _skip.toString(),
       });
-      print(response.body);
+      print(response.body.toString());
       if (response.statusCode == 200) {
         print("API Response ----> Success!");
         initDataList.clear();
         print("Initial DataList ----> Cleared");
         final data = jsonDecode(response.body)['post'];
         print("Data ----> Fetched");
+        print(data[1]);
         for (var each in data) {
           initDataList.add(SearchPost.fromJson(each));
         }
@@ -336,6 +339,15 @@ class _FilterViewState extends State<FilterView> {
                   ],
                 ),
               ));
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    fromDateCon.dispose();
+    toDateCon.dispose();
+    _textFieldController.dispose();
+    super.dispose();
   }
 
   Widget searchBody() {
@@ -1367,21 +1379,21 @@ class _FilterViewState extends State<FilterView> {
                   ),
                 ).onTap(
                   () {
-                    setState(() {
-                      clearData = true;
-                      // isSearchData = false;
-                      isSearch = true;
-                      _age = RangeValues(18, 99);
-                      startAge = 18;
-                      endAge = 99;
-                      controller.clear();
-                      gender = null;
-                      stateValue = null;
-                      cityValue = null;
-                      // dropDownSelectedUser = dropDownUserList[0];
-                      formType = formTypeList[0];
-                    });
+                    clearData = true;
+                    // isSearchData = false;
+                    isSearch = true;
+                    _age = RangeValues(0, 99);
+                    startAge = _age.start;
+                    endAge = _age.end;
+                    controller.clear();
+                    gender = null;
+                    stateValue = null;
+                    cityValue = null;
+                    fromDate = null;
+                    toDate = null;
+                    formType = formTypeList[0];
                     startTime();
+                    print("Filters Cleared =====> Fields = null");
                   },
                 ),
               ),
