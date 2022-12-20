@@ -1433,6 +1433,8 @@ class _FilterViewState extends State<FilterView> {
                     gender = null;
                     stateValue = null;
                     cityValue = null;
+                    fromDateCon.clear();
+                    toDateCon.clear();
                     fromDate = null;
                     toDate = null;
                     formType = formTypeList[0];
