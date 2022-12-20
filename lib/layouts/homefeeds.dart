@@ -697,7 +697,7 @@ class _HomeFeedsState extends State<HomeFeeds>
                     ),
                   ),
                 ),
-                height: 60,
+                height: 500,
                 width: double.infinity,
                 placeholder: (context, url) => Center(
                   child: Container(child: CircularProgressIndicator()),
