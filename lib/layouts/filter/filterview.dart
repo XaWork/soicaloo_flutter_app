@@ -499,25 +499,69 @@ class _FilterViewState extends State<FilterView> {
                     child: Container(
                       // height: (MediaQuery.of(context).size.height / 100) * 40,
                       width: MediaQuery.of(context).size.width,
-                      child: dataList[index].deadData != null
-                          ? CachedNetworkImage(
-                              imageUrl: dataList[index].allImage![0],
-                              placeholder: (context, url) => Center(
-                                child: Container(
-                                    child: CircularProgressIndicator()),
-                              ),
-                              errorWidget: (context, url, error) =>
-                                  Icon(Icons.error),
-                            ).blurred(blur: 20)
-                          : CachedNetworkImage(
-                              imageUrl: dataList[index].allImage![0],
-                              placeholder: (context, url) => Center(
-                                child: Container(
-                                    child: CircularProgressIndicator()),
-                              ),
-                              errorWidget: (context, url, error) =>
-                                  Icon(Icons.error),
-                            ),
+                      child: dataList[index].allImage!.length > 0
+                          ? dataList[index].deadData != null
+                              ? CachedNetworkImage(
+                                  imageUrl: dataList[index].allImage![0],
+                                  placeholder: (context, url) => Center(
+                                    child: Container(
+                                        child: CircularProgressIndicator()),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Icon(Icons.error),
+                                ).blurred(blur: 20)
+                              : CachedNetworkImage(
+                                  imageUrl: dataList[index].allImage![0],
+                                  placeholder: (context, url) => Center(
+                                    child: Container(
+                                        child: CircularProgressIndicator()),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Icon(Icons.error),
+                                )
+                          : dataList[index].video != ""
+                              ? InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => ViewPublicPost(
+                                              id: dataList[index].postId)),
+                                    );
+                                    print('tapped');
+                                  },
+                                  child: VideoViewFix(
+                                      url: dataList[index].video,
+                                      play: true,
+                                      id: dataList[index].postId,
+                                      mute: false),
+                                )
+                              : dataList[index].pdf != ""
+                                  ? InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ViewPublicPost(
+                                                      id: dataList[index]
+                                                          .postId)),
+                                        );
+                                        print('tapped');
+                                      },
+                                      child: PdfWidget(
+                                        pdf: dataList[index].pdf,
+                                        pdfName: dataList[index].pdfName,
+                                        pdfSize: dataList[index].pdfSize,
+                                      ),
+                                    )
+                                  : dataList[index].video == "" &&
+                                          dataList[index].pdf == "" &&
+                                          dataList[index].allImage!.length ==
+                                              0 &&
+                                          dataList[index].text != ""
+                                      ? Container()
+                                      : null,
                     ),
                   ),
                   SizedBox(height: 10),
