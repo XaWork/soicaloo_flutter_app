@@ -23,17 +23,6 @@ import '../../../global/global.dart';
 import 'addvideoPost.dart';
 import 'create_post.dart';
 
-// body_mark
-// remarks
-// fir_dd_number
-// date_of_fir
-// police_station
-// contact_number
-// height
-// police_station_no
-// location_lat
-// location_lng
-
 class CreatePostFirstStepModel {
   final TextEditingController nameCon = TextEditingController();
   final TextEditingController fatherNameCon = TextEditingController();
@@ -503,14 +492,14 @@ class _CreatePostFirstStepState extends State<CreatePostFirstStep> {
                 ],
               ),
             EditTextField(
-              validator: onlyRequiredValidate,
+              //validator: onlyRequiredValidate,
               controller: firstStepData.firDdNumber,
               onChanged: (input) {},
               labelText: 'FIR / DD / Complaint No',
               hint: 'Enter fir dd number',
             ),
             EditTextField(
-              validator: onlyRequiredValidate,
+              //validator: onlyRequiredValidate,
               controller: firstStepData.dateOfFIR,
               onChanged: (input) {},
               readOnly: true,
@@ -523,7 +512,7 @@ class _CreatePostFirstStepState extends State<CreatePostFirstStep> {
               hint: 'Tap to select date',
             ),
             EditTextField(
-              validator: onlyRequiredValidate,
+              //validator: onlyRequiredValidate,
               controller: firstStepData.policeStation,
               onChanged: (input) {},
               labelText: 'Police Station',
@@ -531,14 +520,14 @@ class _CreatePostFirstStepState extends State<CreatePostFirstStep> {
             ),
             if (widget.postType == 'missing')
               EditTextField(
-                validator: onlyRequiredValidate,
+                //validator: onlyRequiredValidate,
                 controller: firstStepData.policeStationAdd,
                 onChanged: (input) {},
                 labelText: 'Police Station Address',
                 hint: 'Enter police station address',
               ),
             EditTextField(
-              validator: validateMobile,
+              //validator: validateMobile,
               controller: firstStepData.policeStationNo,
               onChanged: (input) {},
               maxLines: 1,
@@ -581,8 +570,8 @@ class _CreatePostFirstStepState extends State<CreatePostFirstStep> {
               },
             ),
             EditTextField(
-              validator:
-                  widget.postType == 'found' ? null : onlyRequiredValidate,
+              //validator:
+              //  widget.postType == 'found' ? null : onlyRequiredValidate,
               controller: firstStepData.policeIOName,
               onChanged: (input) {},
               labelText: widget.postType == 'found'
@@ -594,14 +583,14 @@ class _CreatePostFirstStepState extends State<CreatePostFirstStep> {
             ),
             if (widget.postType == 'found')
               EditTextField(
-                validator: onlyRequiredValidate,
+                //validator: onlyRequiredValidate,
                 controller: firstStepData.ngoOrUsername,
                 onChanged: (input) {},
                 labelText: 'NGO / Your Name',
                 hint: 'Enter ngo or your name',
               ),
             EditTextField(
-              validator: validateMobile,
+              //validator: validateMobile,
               controller: firstStepData.contactNumber,
               onChanged: (input) {},
               maxLines: 1,

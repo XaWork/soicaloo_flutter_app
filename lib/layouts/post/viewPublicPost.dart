@@ -23,6 +23,7 @@ import 'package:timeago/timeago.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../zoom/zoomOverlay.dart';
+import 'add_post/edit_post_first_step.dart';
 
 // ignore: must_be_immutable
 class ViewPublicPost extends StatefulWidget {
@@ -105,7 +106,7 @@ class _HomeState extends State<ViewPublicPost> {
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
               child: Container(
-                  height: postUserId != userID ? 250 : 150,
+                  height: postUserId != userID ? 250 : 250,
                   child: ListView(
                     children: <Widget>[
                       SizedBox(
@@ -239,6 +240,29 @@ class _HomeState extends State<ViewPublicPost> {
                                               fontSize: 15.0),
                                         ),
                                       )
+                                : Container(),
+                            postUserId == userID
+                                ? ListTile(
+                                    onTap: () {
+                                      Navigator.of(context, rootNavigator: true)
+                                          .pop("Discard");
+                                      // Navigator.pop(context);
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  EditPostFirstStep(
+                                                      userName: userName,
+                                                      userimage: userImage,
+                                                      postId: postId)));
+                                    },
+                                    title: new Text(
+                                      "Edit",
+                                      style: new TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15.0),
+                                    ),
+                                  )
                                 : Container(),
                           ],
                         ),

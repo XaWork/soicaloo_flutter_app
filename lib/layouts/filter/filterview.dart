@@ -52,6 +52,7 @@ class _FilterViewState extends State<FilterView> {
   String? gender;
   final TextEditingController fromDateCon = TextEditingController();
   final TextEditingController toDateCon = TextEditingController();
+  TextEditingController nameController = TextEditingController();
   String? fromDate;
   String? toDate;
   var gender1 = [
@@ -116,7 +117,7 @@ class _FilterViewState extends State<FilterView> {
         'name': (formType == 'Missing' ||
                 formType == 'People' ||
                 formType == 'Dead')
-            ? controller.text
+            ? nameController.text
             : '',
         'gender': gender ?? '',
         'date_from': fromDate ?? '',
@@ -135,12 +136,14 @@ class _FilterViewState extends State<FilterView> {
         print("Initial DataList ----> Cleared");
         final data = jsonDecode(response.body)['post'];
         print("Data ----> Fetched");
-        print(data[1]);
+        print(data[0]);
+
         for (var each in data) {
           initDataList.add(SearchPost.fromJson(each));
         }
+        print(initDataList);
         dataList = dataList + initDataList;
-        print(data[1]);
+        print(data[0]);
         print("Data ----> Added to the DataList!");
         print(dataList);
         print(dataList.length);
@@ -302,6 +305,16 @@ class _FilterViewState extends State<FilterView> {
   }
 
   @override
+  void dispose() {
+    controller.dispose();
+    fromDateCon.dispose();
+    toDateCon.dispose();
+    _textFieldController.dispose();
+    nameController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -339,15 +352,6 @@ class _FilterViewState extends State<FilterView> {
                   ],
                 ),
               ));
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    fromDateCon.dispose();
-    toDateCon.dispose();
-    _textFieldController.dispose();
-    super.dispose();
   }
 
   Widget searchBody() {
@@ -1115,7 +1119,7 @@ class _FilterViewState extends State<FilterView> {
                     child: Container(
                       height: 43,
                       child: TextField(
-                        controller: controller,
+                        controller: nameController,
                         style: TextStyle(
                             color:
                                 Theme.of(context).brightness == Brightness.dark
