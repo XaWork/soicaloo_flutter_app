@@ -7,6 +7,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/services.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:path_provider/path_provider.dart';
 // import 'package:socialoo/Helper/sizeConfig.dart';
@@ -644,6 +645,10 @@ class _EditProfileState extends State<EditProfile> {
                         controller: phoneController,
                         // readOnly: true,
                         style: TextStyle(color: Colors.black),
+                        /*inputFormatters: [
+                          LengthLimitingTextInputFormatter(10),
+                        ],*/
+                        maxLength: 15,
                         decoration: InputDecoration(
                           hintText: "Phone",
                           hintStyle: TextStyle(color: Colors.black),

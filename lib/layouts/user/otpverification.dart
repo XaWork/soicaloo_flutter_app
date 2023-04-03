@@ -87,7 +87,7 @@ class OtpVerification extends StatelessWidget {
                   ),
                   const SizedBox(height: 50),
                   Text(
-                    'Enter the OTP we sent',
+                    'Enter the OTP we sent on Email',
                     style: TextStyle(
                       color: Colors.grey[600],
                     ),

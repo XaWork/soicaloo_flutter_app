@@ -13,10 +13,10 @@ import 'package:nb_utils/nb_utils.dart';
 // import 'package:nb_utils/src/widget_extensions.dart';
 import 'package:socialoo/global/global.dart';
 import 'package:socialoo/layouts/chat/chat.dart';
-import 'package:socialoo/layouts/homefeeds.dart';
 import 'package:socialoo/layouts/post/viewPublicPost.dart';
 import 'package:socialoo/layouts/user/myFollowers.dart';
 import 'package:socialoo/layouts/user/myFollowing.dart';
+import 'package:socialoo/layouts/user/userpostmodel.dart';
 import 'package:socialoo/layouts/widgets/report_alertdialogmessage.dart';
 import 'package:socialoo/models/postFollowModal.dart';
 import 'package:socialoo/models/postModal.dart';
@@ -43,13 +43,19 @@ class _ProfileState extends State<PublicProfile> {
   late FollowModal followModal;
   late UnfollowModal unfollowModal;
 
+  int _skip = 0;
+  final _scrollController = ScrollController();
+
+  List<UserPost> dataList = [];
+
+  bool postdataloading = true;
+
   @override
   void initState() {
-    // print(widget.peerId + ">>>>>>>>>>");
-    // print(widget.peerId + ">>>>>>>>>>");
+    _scrollController.addListener(_scrollListener);
     print(userID! + ' User Id');
     _getUser();
-    _getPost();
+    getUserPost();
     super.initState();
   }
 
@@ -70,7 +76,44 @@ class _ProfileState extends State<PublicProfile> {
     var userData = json.decode(responseData);
     modal = UserDataModel.fromJson(userData);
     print(responseData);
-    _getPost();
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  Future<List<UserPost>> getUserPost() async {
+    print("Searching User Post ==============>");
+    try {
+      List<UserPost> initialPost = [];
+      final response = await client.post(Uri.parse("${baseUrl()}/post_by_user"),
+          body: {"user_id": widget.peerId, "skip": _skip.toString()});
+      print(response.body);
+      if (response.statusCode == 200) {
+        print("API Response ----> Success!");
+        initialPost.clear();
+        print("Initial DataList ----> Cleared");
+        final data = jsonDecode(response.body)['follower'];
+        print("Data ----> Fetched");
+        print(data[0]);
+        for (var each in data) {
+          initialPost.add(UserPost.fromJson(each));
+        }
+        print(initialPost);
+        dataList = dataList + initialPost;
+        print(data[0]);
+        print(dataList);
+        print(dataList.length);
+      } else {
+        log(response..statusCode.toString());
+      }
+      print("PostFething ----> Complete");
+    } catch (e) {
+      log("unable to fetch post");
+    }
+    setState(() {
+      postdataloading = false;
+    });
+    return dataList;
   }
 
   _getPost() async {
@@ -94,6 +137,16 @@ class _ProfileState extends State<PublicProfile> {
       setState(() {
         isLoading = false;
       });
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      _skip = _skip + 10;
+      print("UserPost API ======> Calling");
+      getUserPost();
+      print("UserPost API ======> Called");
+    }
   }
 
   @override
@@ -228,525 +281,476 @@ class _ProfileState extends State<PublicProfile> {
             ? Center(
                 child: loader(context),
               )
-            : modal != null
-                ? ListView(
-                    children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Stack(
-                            children: <Widget>[
-                              modal!.user!.coverPic!.isEmpty
-                                  ? Image.asset(
-                                      'assets/images/defaultcover.png',
-                                      alignment: Alignment.center,
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
-                                      height: 200,
-                                    )
-                                  : SizedBox(
-                                      height: 200,
-                                      width: double.infinity,
-                                      child: CachedNetworkImage(
-                                        imageUrl: modal!.user!.coverPic!,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                              SizedBox(
-                                width: double.infinity,
-                                height: 200,
-                                child: Container(
-                                  alignment: const Alignment(0.0, 2.5),
-                                  child: Stack(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(60.0),
-                                        child: modal!.user!.profilePic ==
-                                                    null ||
-                                                modal!.user!.profilePic!.isEmpty
-                                            ? Container(
-                                                decoration: BoxDecoration(
-                                                  color:
-                                                      const Color(0xFF003a54),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          60.0),
-                                                ),
-                                                child: Image.asset(
-                                                  'assets/images/defaultavatar.png',
-                                                  width: 120,
-                                                ),
-                                              )
-                                            : CachedNetworkImage(
-                                                imageUrl:
-                                                    modal!.user!.profilePic!,
-                                                height: 120,
-                                                width: 120,
-                                                fit: BoxFit.cover,
-                                              ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 70),
-                          Text(
-                            modal!.user!.username!.capitalize(),
-                            style: Theme.of(context)
-                                .textTheme
-                                .headline6!
-                                .copyWith(fontSize: 16),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(modal!.user!.bio!,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headline6!
-                                  .copyWith(fontSize: 14)),
-                          const SizedBox(height: 20),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 20, right: 20, top: 10),
-                            child: widget.peerId != userID
-                                ? Row(
-                                    children: [
-                                      globleFollowing.contains(modal!.user!.id)
-                                          ? Expanded(
-                                              child: Container(
-                                                margin: const EdgeInsets.only(
-                                                    top: 10.0),
-                                                height: 38,
-                                                width: (context.width() -
-                                                        (3 * 16)) *
-                                                    0.4,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.redAccent[700],
-                                                  borderRadius:
-                                                      const BorderRadius.all(
-                                                    Radius.circular(5.0),
-                                                  ),
-                                                ),
-                                                child: const Center(
-                                                  child: Text(
-                                                    'Unfollow',
-                                                    textAlign: TextAlign.left,
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                      fontSize: 16,
-                                                      letterSpacing: 0.0,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ).onTap(() {
-                                                unfollowApiCall();
-                                              }),
-                                            )
-                                          : Expanded(
-                                              child: Container(
-                                                margin: const EdgeInsets.only(
-                                                    top: 10.0),
-                                                height: 38,
-                                                width: (context.width() -
-                                                        (3 * 16)) *
-                                                    0.4,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.blue[700],
-                                                  borderRadius:
-                                                      const BorderRadius.all(
-                                                    Radius.circular(5.0),
-                                                  ),
-                                                ),
-                                                child: const Center(
-                                                  child: Text(
-                                                    'Follow',
-                                                    textAlign: TextAlign.left,
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                      fontSize: 16,
-                                                      letterSpacing: 0.0,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ).onTap(() {
-                                                followApiCall();
-                                              }),
-                                            ),
-                                      SizedBox(
-                                        width: 10,
-                                      ),
-                                      Expanded(
-                                        child: Container(
-                                          margin:
-                                              const EdgeInsets.only(top: 10.0),
-                                          height: 38,
-                                          width: (context.width() - (3 * 16)) *
-                                              0.4,
-                                          decoration: const BoxDecoration(
-                                            color: Color(0xffE5E6EB),
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(5.0),
-                                            ),
-                                          ),
-                                          child: const Center(
-                                            child: Text(
-                                              'Message',
-                                              textAlign: TextAlign.left,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 16,
-                                                letterSpacing: 0.0,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ),
-                                        ).onTap(() {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => Chat(
-                                                peerID: widget.peerId,
-                                                peerUrl: widget.peerUrl,
-                                                peerName: widget.peerName,
-                                              ),
-                                            ),
-                                          );
-                                        }),
-                                      )
-                                    ],
-                                  )
-                                : globleFollowing.contains(modal!.user!.id)
-                                    ? Expanded(
-                                        child: Container(
-                                          // width: 100,
-                                          // ignore: deprecated_member_use
-                                          child: ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(5),
-                                                  side: BorderSide(
-                                                      color: Colors.grey,
-                                                      width: 1.5)),
-                                            ),
-                                            child: Text(
-                                              "Following",
-                                              style: TextStyle(
-                                                  color: Colors.grey[700]),
-                                            ),
-                                            onPressed: () {
-                                              unfollowApiCall();
-                                            },
-                                          ),
-                                        ),
-                                      )
-                                    : Expanded(
-                                        child: Container(
-                                          child: ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  // ignore: deprecated_member_use
-                                                  Theme.of(context).accentColor,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
-                                              ),
-                                            ),
-                                            child: Text(
-                                              "Follow",
-                                              style: TextStyle(
-                                                  color: Colors.white),
-                                            ),
-                                            onPressed: () {
-                                              followApiCall();
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                          ),
-                          const SizedBox(height: 20),
-                          const Divider(),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 50),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                buildCountColumn("Posts", modal!.userPost),
-                                InkWell(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                FollowingScreen(
-                                                    id: modal!.user!.id)),
-                                      );
-                                    },
-                                    child: buildCountColumn(
-                                        "Following", modal!.following)),
-                                InkWell(
-                                  onTap: () {
-                                    print(modal!.user!.id);
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => FollowersScreen(
-                                              id: modal!.user!.id)),
-                                    );
-                                  },
-                                  child: buildCountColumn(
-                                      "Followers", modal!.followers),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          const Divider(),
-                          myPost()
-                        ],
-                      ),
-                    ],
-                  )
-                : Container());
-  }
-
-  Widget myPost() {
-    return Padding(
-        padding: const EdgeInsets.only(top: 20),
-        child: postModal.follower!.length > 0
-            ? GridView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                primary: false,
-                padding: EdgeInsets.all(5),
-                itemCount: postModal.follower!.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 200 / 200,
-                ),
-                itemBuilder: (BuildContext context, int index) {
-                  bool isimage =
-                      postModal.follower![index].allImage!.length > 0;
-                  bool isvideo = postModal.follower![index].video != "";
-                  bool ispdf = postModal.follower![index].pdf != "";
-                  bool istext = postModal.follower![index].pdf == "" &&
-                      postModal.follower![index].video == "" &&
-                      postModal.follower![index].allImage!.length == 0;
-                  if (isimage) {
-                    return Padding(
-                        padding: EdgeInsets.all(5.0),
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ViewPublicPost(
-                                      id: postModal.follower![index].postId)),
-                            );
-                          },
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: CachedNetworkImage(
-                              imageUrl: postModal.follower![index].allImage![0],
-                              imageBuilder: (context, imageProvider) =>
-                                  Container(
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: imageProvider,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                              placeholder: (context, url) => Center(
-                                child: Container(
-                                    child: CircularProgressIndicator()),
-                              ),
-                              errorWidget: (context, url, error) =>
-                                  Icon(Icons.error),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ));
-                  }
-                  if (istext) {
-                    return Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ViewPublicPost(
-                                    id: postModal.follower![index].postId)),
-                          );
-                        },
-                        child: Container(
-                          padding: EdgeInsets.all(5),
-                          width: MediaQuery.of(context).size.width * 0.9,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                              color: Theme.of(context).cardColor,
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(10)),
-                              border: Border.all(color: Colors.grey)),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                postModal.follower![index].text!,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .caption!
-                                    .copyWith(fontSize: 14),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                  if (isvideo) {
-                    return Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ViewPublicPost(
-                                    id: postModal.follower![index].postId)),
-                          );
-                        },
-                        child: Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: CachedNetworkImage(
-                                imageUrl: postModal.follower![index].thumbnail!,
-                                imageBuilder: (context, imageProvider) =>
-                                    Container(
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: imageProvider,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                placeholder: (context, url) => Center(
-                                  child: Container(
-                                      child: CircularProgressIndicator()),
-                                ),
-                                errorWidget: (context, url, error) =>
-                                    Icon(Icons.error),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 5, top: 5),
-                                child: Icon(
-                                  CupertinoIcons.play_circle_fill,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-                  if (ispdf) {
-                    return Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ViewPublicPost(
-                                    id: postModal.follower![index].postId)),
-                          );
-                        },
-                        child: Container(
-                          padding: EdgeInsets.all(5),
-                          width: MediaQuery.of(context).size.width * 0.9,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                              color: Theme.of(context).cardColor,
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(10)),
-                              border: Border.all(color: Colors.grey)),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SvgPicture.asset(
-                                'assets/images/pdf_file.svg',
-                                height: 50,
-                                color: Colors.grey,
-                              ),
-                              Text(
-                                postModal.follower![index].pdf_name!,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .caption!
-                                    .copyWith(fontSize: 14),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                postModal.follower![index].pdf_size!,
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                  return Padding(
-                    padding: EdgeInsets.all(5.0),
-                    child: Container(
-                      color: Colors.grey[200],
-                      child: Icon(
-                        Icons.image,
-                        size: 120,
-                      ),
-                    ),
-                  );
-                },
-              )
-            : Container(
+            : SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                controller: _scrollController,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      "Share photos and videos",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      "When you share photos and videos, they'll appear\non your profile",
-                      style: TextStyle(fontSize: 17, color: Colors.black54),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 10),
+                    headerProfile(),
+                    postdataloading ? Container() : myPost()
                   ],
                 ),
               ));
+  }
+
+  Widget headerProfile() {
+    return Column(
+      children: [
+        Stack(
+          children: <Widget>[
+            modal!.user!.coverPic!.isEmpty
+                ? Image.asset(
+                    'assets/images/defaultcover.png',
+                    alignment: Alignment.center,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    height: 200,
+                  )
+                : SizedBox(
+                    height: 200,
+                    width: double.infinity,
+                    child: CachedNetworkImage(
+                      imageUrl: modal!.user!.coverPic!,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+            SizedBox(
+              width: double.infinity,
+              height: 200,
+              child: Container(
+                alignment: const Alignment(0.0, 2.5),
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(60.0),
+                      child: modal!.user!.profilePic == null ||
+                              modal!.user!.profilePic!.isEmpty
+                          ? Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF003a54),
+                                borderRadius: BorderRadius.circular(60.0),
+                              ),
+                              child: Image.asset(
+                                'assets/images/defaultavatar.png',
+                                width: 120,
+                              ),
+                            )
+                          : CachedNetworkImage(
+                              imageUrl: modal!.user!.profilePic!,
+                              height: 120,
+                              width: 120,
+                              fit: BoxFit.cover,
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 70),
+        Text(
+          modal!.user!.username!.capitalize(),
+          style: Theme.of(context).textTheme.headline6!.copyWith(fontSize: 16),
+        ),
+        const SizedBox(height: 3),
+        Text(modal!.user!.bio!,
+            style:
+                Theme.of(context).textTheme.headline6!.copyWith(fontSize: 14)),
+        const SizedBox(height: 20),
+        Padding(
+          padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
+          child: widget.peerId != userID
+              ? Row(
+                  children: [
+                    globleFollowing.contains(modal!.user!.id)
+                        ? Expanded(
+                            child: Container(
+                              margin: const EdgeInsets.only(top: 10.0),
+                              height: 38,
+                              width: (context.width() - (3 * 16)) * 0.4,
+                              decoration: BoxDecoration(
+                                color: Colors.redAccent[700],
+                                borderRadius: const BorderRadius.all(
+                                  Radius.circular(5.0),
+                                ),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'Unfollow',
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                    letterSpacing: 0.0,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ).onTap(() {
+                              unfollowApiCall();
+                            }),
+                          )
+                        : Expanded(
+                            child: Container(
+                              margin: const EdgeInsets.only(top: 10.0),
+                              height: 38,
+                              width: (context.width() - (3 * 16)) * 0.4,
+                              decoration: BoxDecoration(
+                                color: Colors.blue[700],
+                                borderRadius: const BorderRadius.all(
+                                  Radius.circular(5.0),
+                                ),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'Follow',
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                    letterSpacing: 0.0,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ).onTap(() {
+                              followApiCall();
+                            }),
+                          ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 10.0),
+                        height: 38,
+                        width: (context.width() - (3 * 16)) * 0.4,
+                        decoration: const BoxDecoration(
+                          color: Color(0xffE5E6EB),
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(5.0),
+                          ),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'Message',
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                              letterSpacing: 0.0,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ).onTap(() {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Chat(
+                              peerID: widget.peerId,
+                              peerUrl: widget.peerUrl,
+                              peerName: widget.peerName,
+                            ),
+                          ),
+                        );
+                      }),
+                    )
+                  ],
+                )
+              : globleFollowing.contains(modal!.user!.id)
+                  ? Expanded(
+                      child: Container(
+                        // width: 100,
+                        // ignore: deprecated_member_use
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                                side:
+                                    BorderSide(color: Colors.grey, width: 1.5)),
+                          ),
+                          child: Text(
+                            "Following",
+                            style: TextStyle(color: Colors.grey[700]),
+                          ),
+                          onPressed: () {
+                            unfollowApiCall();
+                          },
+                        ),
+                      ),
+                    )
+                  : Expanded(
+                      child: Container(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                // ignore: deprecated_member_use
+                                Theme.of(context).accentColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                          ),
+                          child: Text(
+                            "Follow",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: () {
+                            followApiCall();
+                          },
+                        ),
+                      ),
+                    ),
+        ),
+        const SizedBox(height: 20),
+        const Divider(),
+        userData(),
+        const SizedBox(height: 20),
+        const Divider(),
+      ],
+    );
+  }
+
+  Widget userData() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 50),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          buildCountColumn("Posts", modal!.userPost),
+          InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          FollowingScreen(id: modal!.user!.id)),
+                );
+              },
+              child: buildCountColumn("Following", modal!.following)),
+          InkWell(
+            onTap: () {
+              print(modal!.user!.id);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => FollowersScreen(id: modal!.user!.id)),
+              );
+            },
+            child: buildCountColumn("Followers", modal!.followers),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget myPost() {
+    return Padding(
+        padding: const EdgeInsets.all(2),
+        child: GridView.builder(
+          scrollDirection: Axis.vertical,
+          physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          primary: true,
+          padding: EdgeInsets.all(5),
+          itemCount: dataList.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 200 / 200,
+          ),
+          itemBuilder: (BuildContext context, int index) {
+            bool isimage = dataList[index].allImage!.length > 0;
+            bool isvideo = dataList[index].video != "";
+            bool ispdf = dataList[index].pdf != "";
+            bool istext = dataList[index].pdf == "" &&
+                dataList[index].video == "" &&
+                dataList[index].allImage!.length == 0;
+            if (isimage) {
+              return Padding(
+                  padding: EdgeInsets.all(5.0),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                ViewPublicPost(id: dataList[index].postId)),
+                      );
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: CachedNetworkImage(
+                        imageUrl: dataList[index].allImage![0],
+                        imageBuilder: (context, imageProvider) => Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: imageProvider,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        placeholder: (context, url) => Center(
+                          child: Container(child: CircularProgressIndicator()),
+                        ),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ));
+            }
+            if (istext) {
+              return Padding(
+                padding: EdgeInsets.all(5.0),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              ViewPublicPost(id: dataList[index].postId)),
+                    );
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(5),
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10)),
+                        border: Border.all(color: Colors.grey)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          dataList[index].text!,
+                          style: Theme.of(context)
+                              .textTheme
+                              .caption!
+                              .copyWith(fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+            if (isvideo) {
+              return Padding(
+                padding: EdgeInsets.all(5.0),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              ViewPublicPost(id: dataList[index].postId)),
+                    );
+                  },
+                  child: Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: CachedNetworkImage(
+                          imageUrl: dataList[index].videoThumbnail!,
+                          imageBuilder: (context, imageProvider) => Container(
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: imageProvider,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          placeholder: (context, url) => Center(
+                            child:
+                                Container(child: CircularProgressIndicator()),
+                          ),
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 5, top: 5),
+                          child: Icon(
+                            CupertinoIcons.play_circle_fill,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+            if (ispdf) {
+              return Padding(
+                padding: EdgeInsets.all(5.0),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              ViewPublicPost(id: dataList[index].postId)),
+                    );
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(5),
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10)),
+                        border: Border.all(color: Colors.grey)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/images/pdf_file.svg',
+                          height: 50,
+                          color: Colors.grey,
+                        ),
+                        Text(
+                          dataList[index].pdfName!,
+                          style: Theme.of(context)
+                              .textTheme
+                              .caption!
+                              .copyWith(fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          dataList[index].pdfSize!,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+            return Padding(
+              padding: EdgeInsets.all(5.0),
+              child: Container(
+                color: Colors.grey[200],
+                child: Icon(
+                  Icons.image,
+                  size: 120,
+                ),
+              ),
+            );
+          },
+        ));
   }
 
   Widget buildCountColumn(String title, String? value) {

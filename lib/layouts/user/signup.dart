@@ -44,6 +44,10 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController cpassController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
 
+  String username = '';
+  String email = '';
+  String mobile = '';
+
   @override
   void dispose() {
     nameController.dispose();
@@ -150,6 +154,25 @@ class _SignUpState extends State<SignUp> {
                   ),
                 ),
                 Positioned(top: 40, left: 0, child: _backButton()),
+                isLoading
+                    ? Center(
+                        child: Container(
+                          height: 100,
+                          width: 100,
+                          color: Colors.white,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Text("Loading...")
+                            ],
+                          ),
+                        ),
+                      )
+                    : SizedBox.shrink()
               ],
             ),
           );
@@ -246,17 +269,43 @@ class _SignUpState extends State<SignUp> {
 
   Widget _emailPasswordWidget() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        _entryField("Username", nameController, TextInputAction.next),
-        _entryField("Email id", emailController, TextInputAction.next),
+        _entryField("Username", nameController, TextInputAction.next, (value) {
+          setState(() {
+            username = '';
+          });
+        }),
+        Text(
+          username,
+          style: TextStyle(color: Colors.red),
+        ),
+        _entryField("Email id", emailController, TextInputAction.next, (value) {
+          setState(() {
+            email = '';
+          });
+        }),
+        Text(
+          email,
+          style: TextStyle(color: Colors.red),
+        ),
         SignUpTextField(
           validator: validateMobile,
           controller: mobileController,
-          onChanged: (input) {},
+          onChanged: (input) {
+            setState(() {
+              mobile = '';
+            });
+          },
           maxLines: 1,
+          maxLength: 15,
           inputFormatterData: digitsInputFormatter(),
           keyBoard: TextInputType.number,
           labelText: 'Mobile Number',
+        ),
+        Text(
+          mobile,
+          style: TextStyle(color: Colors.red),
         ),
         // _entryField("Mobile Number", mobileController, TextInputAction.next),
         _passwordTextfield(context),
@@ -265,7 +314,7 @@ class _SignUpState extends State<SignUp> {
   }
 
   Widget _entryField(String title, TextEditingController controller,
-      TextInputAction textInputAction,
+      TextInputAction textInputAction, var onchange,
       {bool isPassword = false}) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
@@ -281,6 +330,7 @@ class _SignUpState extends State<SignUp> {
           ),
           TextField(
               textInputAction: textInputAction,
+              onChanged: onchange,
               controller: controller,
               obscureText: isPassword,
               decoration: InputDecoration(
@@ -349,6 +399,9 @@ class _SignUpState extends State<SignUp> {
           mobileController.text.trim().length == 10 &&
           passwordController.text.length > 5 &&
           checkedValue != false) {
+        setState(() {
+          isLoading = true;
+        });
         _apiCall();
       } else {
         if (nameController.text.isEmpty)
@@ -433,7 +486,7 @@ class _SignUpState extends State<SignUp> {
           InkWell(
             onTap: () {
               _handleURLButtonPress(context,
-                  "https://app.waahak.com/missing-person/terms-and-conditions");
+                  "https://mph.missingpersonhelpline.org/terms-and-conditions");
             },
             child: Text("Terms and Conditions ",
                 style: TextStyle(
@@ -451,7 +504,7 @@ class _SignUpState extends State<SignUp> {
           InkWell(
             onTap: () {
               _handleURLButtonPress(context,
-                  "https://app.waahak.com/missing-person/privacy-policy");
+                  "https://mph.missingpersonhelpline.org/privacy-policy");
             },
             child: Text("Privacy Policy",
                 style: TextStyle(
@@ -473,7 +526,8 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-  Future<void> _apiCall() async {
+  Future _apiCall() async {
+    print("calling API ==========>");
     try {
       setState(() {
         isLoading = true;
@@ -493,12 +547,10 @@ class _SignUpState extends State<SignUp> {
           isLoading = false;
         });
         Map<String, dynamic> dic = json.decode(response.body);
-
         if (dic['response_code'] == "1") {
           setState(() {
             isLoading = false;
           });
-
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => OtpVerification(
                   id: dic['user']['id'],
@@ -508,8 +560,16 @@ class _SignUpState extends State<SignUp> {
         } else {
           setState(() {
             isLoading = false;
+            dic['username'] == null
+                ? username = ""
+                : username = dic['username'].toString();
+            dic['email'] == null ? email = "" : email = dic['email'].toString();
+            dic['mobile_number'] == null
+                ? mobile = ""
+                : mobile = dic['mobile_number'].toString();
           });
-          socialootoast("Error", dic['message'], context);
+          socialootoast("Error",
+              "please check the username/email/mobile/password", context);
         }
       } else {
         setState(() {

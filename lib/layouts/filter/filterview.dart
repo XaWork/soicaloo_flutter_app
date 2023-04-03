@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:blur/blur.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:csc_picker/csc_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -48,6 +47,7 @@ class _FilterViewState extends State<FilterView> {
 
   bool clearData = false;
   String? stateValue;
+  String? countryValue;
   String? cityValue;
   String? gender;
   final TextEditingController fromDateCon = TextEditingController();
@@ -103,6 +103,7 @@ class _FilterViewState extends State<FilterView> {
     print("Searching Post From =======> $fromDate to $toDate");
     print(
         "Other Details for Searching ==> Age - ${startAge.round().toString()} to ${endAge.round().toString()}");
+    print("Searching for name ========> ${nameController.text}");
     setState(() {
       homedata = false;
     });
@@ -122,7 +123,7 @@ class _FilterViewState extends State<FilterView> {
         'gender': gender ?? '',
         'date_from': fromDate ?? '',
         'date_to': toDate ?? '',
-        'country': 'india',
+        'country': countryValue,
         'state': stateValue ?? '',
         'city': cityValue ?? '',
         "age": '${startAge.round().toString()}-${endAge.round().toString()}',
@@ -136,17 +137,13 @@ class _FilterViewState extends State<FilterView> {
         print("Initial DataList ----> Cleared");
         final data = jsonDecode(response.body)['post'];
         print("Data ----> Fetched");
-        print(data[0]);
 
         for (var each in data) {
           initDataList.add(SearchPost.fromJson(each));
         }
         print(initDataList);
         dataList = dataList + initDataList;
-        print(data[0]);
         print("Data ----> Added to the DataList!");
-        print(dataList);
-        print(dataList.length);
       } else {
         log(response..statusCode.toString());
       }
@@ -161,12 +158,14 @@ class _FilterViewState extends State<FilterView> {
   }
 
   void _scrollListener() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      _skip = _skip + 10;
-      print("Search API ======> Calling");
-      searchedPost();
-      print("Search API ======> Called");
+    if (dataList.length >= 10) {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
+        _skip = _skip + 10;
+        print("Search API ======> Calling");
+        searchedPost();
+        print("Search API ======> Called");
+      }
     }
   }
 
@@ -190,7 +189,7 @@ class _FilterViewState extends State<FilterView> {
       'gender': gender ?? '',
       'date_from': fromDate ?? '',
       'date_to': toDate ?? '',
-      'country': 'india',
+      'country': countryValue ?? '',
       'state': stateValue ?? '',
       'city': cityValue ?? '',
       "age": '${startAge.round().toString()}-${endAge.round().toString()}'
@@ -233,7 +232,7 @@ class _FilterViewState extends State<FilterView> {
     };
     request.headers.addAll(headers);
     request.fields['name'] = controller.text.toLowerCase();
-    request.fields['country'] = 'India';
+    request.fields['country'] = countryValue != null ? countryValue! : '';
     request.fields['age'] =
         '${startAge.round().toString()},${endAge.round().toString()}';
     request.fields['gender'] = gender != null ? gender! : '';
@@ -504,25 +503,15 @@ class _FilterViewState extends State<FilterView> {
                       // height: (MediaQuery.of(context).size.height / 100) * 40,
                       width: MediaQuery.of(context).size.width,
                       child: dataList[index].allImage!.length > 0
-                          ? dataList[index].deadData != null
-                              ? CachedNetworkImage(
-                                  imageUrl: dataList[index].allImage![0],
-                                  placeholder: (context, url) => Center(
-                                    child: Container(
-                                        child: CircularProgressIndicator()),
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                      Icon(Icons.error),
-                                ).blurred(blur: 20)
-                              : CachedNetworkImage(
-                                  imageUrl: dataList[index].allImage![0],
-                                  placeholder: (context, url) => Center(
-                                    child: Container(
-                                        child: CircularProgressIndicator()),
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                      Icon(Icons.error),
-                                )
+                          ? CachedNetworkImage(
+                              imageUrl: dataList[index].allImage![0],
+                              placeholder: (context, url) => Center(
+                                child: Container(
+                                    child: CircularProgressIndicator()),
+                              ),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.error),
+                            )
                           : dataList[index].video != ""
                               ? InkWell(
                                   onTap: () {
@@ -1236,9 +1225,9 @@ class _FilterViewState extends State<FilterView> {
               ? CSCPicker(
                   flagState: CountryFlag.SHOW_IN_DROP_DOWN_ONLY,
                   showCities: true,
-                  showStates: true,
-                  defaultCountry: DefaultCountry.India,
-                  disableCountry: true,
+            defaultCountry: CscCountry.India,
+            showStates: true,
+                  disableCountry: false,
                   cityDropdownLabel: 'District',
                   dropdownItemStyle: TextStyle(
                     color: Theme.of(context).brightness == Brightness.dark
@@ -1267,6 +1256,11 @@ class _FilterViewState extends State<FilterView> {
                   onStateChanged: (value) {
                     setState(() {
                       stateValue = value;
+                    });
+                  },
+                  onCountryChanged: (value) {
+                    setState(() {
+                      countryValue = value;
                     });
                   },
                   onCityChanged: (value) {
@@ -1394,12 +1388,14 @@ class _FilterViewState extends State<FilterView> {
                   () {
                     if (formType == 'People') {
                       setState(() {
+                        _skip = 0;
                         isSearch = true;
                         userData = SearchUserModel();
                       });
                       _getserchedUser();
                     } else {
                       setState(() {
+                        _skip = 0;
                         isSearch = true;
                       });
                       searchedPost();
@@ -1427,23 +1423,25 @@ class _FilterViewState extends State<FilterView> {
                   ),
                 ).onTap(
                   () {
-                    clearData = true;
-                    // isSearchData = false;
-                    isSearch = true;
-                    _age = RangeValues(0, 99);
-                    startAge = _age.start;
-                    endAge = _age.end;
-                    controller.clear();
-                    gender = null;
-                    stateValue = null;
-                    cityValue = null;
-                    fromDateCon.clear();
-                    toDateCon.clear();
-                    fromDate = null;
-                    toDate = null;
-                    formType = formTypeList[0];
-                    startTime();
-                    print("Filters Cleared =====> Fields = null");
+                    setState(() {
+                      clearData = true;
+                      // isSearchData = false;
+                      isSearch = true;
+                      _age = RangeValues(0, 99);
+                      startAge = _age.start;
+                      endAge = _age.end;
+                      controller.clear();
+                      gender = null;
+                      stateValue = "";
+                      fromDateCon.clear();
+                      toDateCon.clear();
+                      fromDate = null;
+                      toDate = null;
+                      formType = formTypeList[0];
+                      startTime();
+                      _skip = 0;
+                      print("Filters Cleared =====> Fields = null");
+                    });
                   },
                 ),
               ),
@@ -1735,21 +1733,13 @@ class _FilterViewState extends State<FilterView> {
           children: [
             Container(
               width: MediaQuery.of(context).size.width,
-              child: post.deadData != null
-                  ? CachedNetworkImage(
-                      imageUrl: post.allImage![0],
-                      placeholder: (context, url) => Center(
-                        child: Container(child: CircularProgressIndicator()),
-                      ),
-                      errorWidget: (context, url, error) => Icon(Icons.error),
-                    ).blurred(blur: 20)
-                  : CachedNetworkImage(
-                      imageUrl: post.allImage![0],
-                      placeholder: (context, url) => Center(
-                        child: Container(child: CircularProgressIndicator()),
-                      ),
-                      errorWidget: (context, url, error) => Icon(Icons.error),
-                    ),
+              child: CachedNetworkImage(
+                imageUrl: post.allImage![0],
+                placeholder: (context, url) => Center(
+                  child: Container(child: CircularProgressIndicator()),
+                ),
+                errorWidget: (context, url, error) => Icon(Icons.error),
+              ),
             ),
             post.dataV == true
                 ? Positioned.fill(

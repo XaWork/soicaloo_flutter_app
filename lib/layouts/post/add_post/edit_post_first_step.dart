@@ -28,13 +28,6 @@ class EditPostFirstStep extends StatefulWidget {
 class _EditPostFirstStepState extends State<EditPostFirstStep> {
   CreatePostFirstStepModel firstStepData = CreatePostFirstStepModel();
 
-  @override
-  void initState() {
-    super.initState();
-    firstStepData.postType = widget.postType;
-    _getPost();
-  }
-
   PublicPostModel? publicPost;
   final TextEditingController postText = TextEditingController();
 
@@ -73,6 +66,13 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
       firstStepData.postType = 'found';
       setFoundData();
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    firstStepData.postType = widget.postType;
+    _getPost();
   }
 
   setMissingData() {
@@ -196,7 +196,7 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
       if (firstStepData.postType == 'missing')
         'police_station_location': firstStepData.policeStation.text,
       'police_station_no': firstStepData.policeStationNo.text,
-      "country": 'India',
+      "country": firstStepData.selectCountry ?? '',
       "state": firstStepData.selectedState ?? '',
       "district": firstStepData.selectedDistrict ?? '',
       if (firstStepData.postType == 'found')
@@ -297,30 +297,38 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
               child: CircularProgressIndicator(),
             )
           : Form(
+              autovalidateMode: AutovalidateMode.always,
               key: formKey,
               child: ListView(
                 padding: EdgeInsets.symmetric(horizontal: 25, vertical: 20),
                 children: [
                   EditTextField(
-                    validator: widget.postType == 'missing'
+                    validator: publicPost!.post!.missingData != null
                         ? onlyRequiredValidate
                         : null,
                     controller: firstStepData.nameCon,
                     onChanged: (input) {},
                     maxLines: 1,
-                    labelText: 'Full Name',
+                    labelText: publicPost!.post!.missingData != null
+                        ? 'Name *'
+                        : 'Name',
                     hint: 'Enter full name',
                   ),
                   EditTextField(
+                    validator: publicPost!.post!.missingData != null
+                        ? onlyRequiredValidate
+                        : null,
                     controller: firstStepData.fatherNameCon,
                     onChanged: (input) {},
                     maxLines: 1,
-                    labelText: 'Father Name',
+                    labelText: publicPost!.post!.missingData != null
+                        ? 'Father Name *'
+                        : 'Father Name',
                     hint: 'Enter father name',
                   ),
                   SizedBox(height: 10),
                   Text(
-                    "Gender",
+                    "Gender *",
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 15),
                   ),
@@ -386,11 +394,11 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
                     maxLines: 1,
                     keyBoard: TextInputType.number,
                     inputFormatterData: digitsInputFormatter(size: 3),
-                    labelText: 'Age',
+                    labelText: 'Age *',
                     hint: 'Enter age',
                   ),
                   EditTextField(
-                    validator: onlyRequiredValidate,
+                    //validator: onlyRequiredValidate,
                     controller: firstStepData.height,
                     onChanged: (input) {},
                     maxLines: 1,
@@ -413,7 +421,8 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
                     labelText: 'Remarks',
                     hint: 'Enter remarks',
                   ),
-                  if (widget.postType == 'dead' || widget.postType == 'found')
+                  if (publicPost!.post!.deadData != null ||
+                      publicPost!.post!.foundData != null)
                     Column(
                       children: [
                         EditTextField(
@@ -421,7 +430,7 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
                           controller: firstStepData.dateFoundCon,
                           // onChanged: (input) {},
                           maxLines: 1,
-                          labelText: 'Found Date',
+                          labelText: 'Found Date *',
                           // onChanged: (input) {},
                           readOnly: true,
                           onTap: () async {
@@ -432,7 +441,7 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
                           hint: 'Enter found date',
                         ),
                         EditTextField(
-                          validator: onlyRequiredValidate,
+                          //validator: onlyRequiredValidate,
                           controller: firstStepData.placeFoundCon,
                           onChanged: (input) {},
                           maxLines: 1,
@@ -442,11 +451,15 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
                       ],
                     ),
                   EditTextField(
-                    // validator: onlyRequiredValidate,
+                    validator: publicPost!.post!.missingData != null
+                        ? onlyRequiredValidate
+                        : null,
                     controller: firstStepData.recendencePlaceCon,
                     onChanged: (input) {},
                     maxLines: 1,
-                    labelText: 'Residence Place',
+                    labelText: publicPost!.post!.missingData != null
+                        ? 'Residence Place *'
+                        : 'Residence Place',
                     hint: 'Enter residence place',
                   ),
                   EditTextField(
@@ -457,16 +470,16 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
                     labelText: 'Native Place',
                     hint: 'Enter native place',
                   ),
-                  if (widget.postType == 'missing')
+                  if (publicPost!.post!.missingData != null)
                     Column(
                       children: [
                         EditTextField(
-                          // validator: onlyRequiredValidate,
+                          validator: onlyRequiredValidate,
                           controller: firstStepData.dateMissingCon,
                           // onChanged: (input) {},
                           maxLines: 1,
                           readOnly: true,
-                          labelText: 'Missing Date',
+                          labelText: 'Missing Date *',
                           onTap: () async {
                             // firstStepData.dateMissingCon.text =
                             String? date = await selectDate(context);
@@ -476,24 +489,24 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
                           hint: 'Enter missing date',
                         ),
                         EditTextField(
-                          // validator: onlyRequiredValidate,
+                          validator: onlyRequiredValidate,
                           controller: firstStepData.placeMissingCon,
                           onChanged: (input) {},
                           maxLines: 1,
-                          labelText: 'Missing Place',
+                          labelText: 'Missing Place *',
                           hint: 'Enter missing place',
                         ),
                       ],
                     ),
                   EditTextField(
-                    validator: onlyRequiredValidate,
+                    //validator: onlyRequiredValidate,
                     controller: firstStepData.firDdNumber,
                     onChanged: (input) {},
                     labelText: 'FIR / DD / Complaint No',
                     hint: 'Enter fir dd number',
                   ),
                   EditTextField(
-                    validator: onlyRequiredValidate,
+                    //validator: onlyRequiredValidate,
                     controller: firstStepData.dateOfFIR,
                     onChanged: (input) {},
                     onTap: () async {
@@ -505,7 +518,7 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
                     hint: 'Tap to select date',
                   ),
                   EditTextField(
-                    validator: onlyRequiredValidate,
+                    //validator: onlyRequiredValidate,
                     controller: firstStepData.policeStation,
                     onChanged: (input) {},
                     labelText: 'Police Station',
@@ -513,14 +526,14 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
                   ),
                   if (widget.postType == 'missing')
                     EditTextField(
-                      validator: onlyRequiredValidate,
+                      //validator: onlyRequiredValidate,
                       controller: firstStepData.policeStationAdd,
                       onChanged: (input) {},
                       labelText: 'Police Station Location',
                       hint: 'Enter police station location',
                     ),
                   EditTextField(
-                    validator: onlyRequiredValidate,
+                    //validator: onlyRequiredValidate,
                     controller: firstStepData.policeStationNo,
                     onChanged: (input) {},
                     maxLines: 1,
@@ -532,10 +545,10 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
                   SizedBox(height: 10),
                   CSCPicker(
                     flagState: CountryFlag.SHOW_IN_DROP_DOWN_ONLY,
-                    defaultCountry: DefaultCountry.India,
                     currentCity: firstStepData.selectedDistrict,
+                    defaultCountry: CscCountry.India,
                     currentState: firstStepData.selectedState,
-                    disableCountry: true,
+                    disableCountry: false,
                     cityDropdownLabel: 'District',
                     disabledDropdownDecoration: BoxDecoration(
                         borderRadius: BorderRadius.all(Radius.circular(5)),
@@ -552,6 +565,11 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
                         firstStepData.selectedState = value ?? '';
                       });
                     },
+                    onCountryChanged: (value) {
+                      setState(() {
+                        firstStepData.selectCountry = value ?? '';
+                      });
+                    },
                     onCityChanged: (value) {
                       setState(() {
                         firstStepData.selectedDistrict = value ?? '';
@@ -559,21 +577,17 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
                     },
                   ),
                   EditTextField(
-                    validator: widget.postType == 'found'
-                        ? null
-                        : onlyRequiredValidate,
+                    validator: onlyRequiredValidate,
                     controller: firstStepData.policeIOName,
                     onChanged: (input) {},
-                    labelText: widget.postType == 'found'
-                        ? 'Police IO'
-                        : 'Police IO / Your Name',
+                    labelText: 'Police IO / Your Name *',
                     hint: widget.postType == 'found'
                         ? 'Enter police io'
                         : 'Enter police io or your name',
                   ),
                   if (widget.postType == 'found')
                     EditTextField(
-                      validator: onlyRequiredValidate,
+                      //validator: onlyRequiredValidate,
                       controller: firstStepData.ngoOrUsername,
                       onChanged: (input) {},
                       labelText: 'NGO / Your Name',
@@ -586,11 +600,11 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
                     maxLines: 1,
                     keyBoard: TextInputType.number,
                     inputFormatterData: digitsInputFormatter(),
-                    labelText: 'Contact No',
+                    labelText: 'Contact No *',
                     hint: 'Enter contact number',
                   ),
                   EditTextField(
-                    validator: onlyRequiredValidate,
+                    //validator: onlyRequiredValidate,
                     controller: postText,
                     onChanged: (input) {},
                     maxLines: 5,
@@ -600,6 +614,7 @@ class _EditPostFirstStepState extends State<EditPostFirstStep> {
                   SizedBox(height: 25),
                   InkWell(
                     onTap: () {
+                      print(firstStepData.selectedDistrict);
                       if (formKey.currentState!.validate()) {
                         if (widget.postType == 'missing') {
                           apiCall();

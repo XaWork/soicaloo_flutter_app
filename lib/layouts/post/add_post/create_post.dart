@@ -205,7 +205,7 @@ class _MyHomePageState extends State<PhotoScreen> {
       if (widget.firstStepData.postType == 'missing')
         'police_station_location': widget.firstStepData.policeStationAdd.text,
       'police_station_no': widget.firstStepData.policeStationNo.text,
-      "country": 'India',
+      "country": widget.firstStepData.selectCountry ?? '',
       "state": widget.firstStepData.selectedState ?? '',
       "district": widget.firstStepData.selectedDistrict ?? '',
       if (widget.firstStepData.postType == 'found')

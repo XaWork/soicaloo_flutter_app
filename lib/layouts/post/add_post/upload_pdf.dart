@@ -257,9 +257,9 @@ class _UploadPdfScreenState extends State<UploadPdfScreen> {
       if (widget.firstStepData.postType == 'missing')
         'police_station_location': widget.firstStepData.policeStationAdd.text,
       'police_station_no': widget.firstStepData.policeStationNo.text,
-      "country": 'India',
-      "state": widget.firstStepData.selectedState ?? '',
-      "district": widget.firstStepData.selectedDistrict ?? '',
+      "country": widget.firstStepData.selectCountry,
+      "state": widget.firstStepData.selectedState,
+      "district": widget.firstStepData.selectedDistrict,
       if (widget.firstStepData.postType == 'found')
         'police_io_name': widget.firstStepData.policeIOName.text
       else

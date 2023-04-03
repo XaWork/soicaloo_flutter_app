@@ -411,7 +411,7 @@ socialootoast(title, msg, BuildContext context) {
       color: appColorBlack,
     ),
     backgroundColor: Colors.grey[300]!,
-    duration: Duration(seconds: 2),
+    duration: Duration(seconds: 5),
   ).show(context);
 }
 

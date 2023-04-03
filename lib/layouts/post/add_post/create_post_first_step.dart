@@ -24,7 +24,7 @@ import 'addvideoPost.dart';
 import 'create_post.dart';
 
 class CreatePostFirstStepModel {
-  final TextEditingController nameCon = TextEditingController();
+  late final TextEditingController nameCon = TextEditingController();
   final TextEditingController fatherNameCon = TextEditingController();
   final TextEditingController genderCon = TextEditingController();
   final TextEditingController ageCon = TextEditingController();
@@ -49,6 +49,7 @@ class CreatePostFirstStepModel {
   String? gender;
   String? selectedState;
   String? selectedDistrict;
+  String? selectCountry;
   String? postType;
 }
 
@@ -92,6 +93,12 @@ class _CreatePostFirstStepState extends State<CreatePostFirstStep> {
 
   CreatePostFirstStepModel firstStepData = CreatePostFirstStepModel();
 
+  onlyRequiredValidate(value) {
+    if (value.isEmpty) {
+      return 'Field is required';
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -133,7 +140,7 @@ class _CreatePostFirstStepState extends State<CreatePostFirstStep> {
   // }
 
   var gender1 = ['Male', 'Female', 'Other'];
-  GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final formKey = GlobalKey<FormState>();
 
   Widget genderWidget(Function validator) {
     return Padding(
@@ -233,9 +240,9 @@ class _CreatePostFirstStepState extends State<CreatePostFirstStep> {
       //   );
       // },
       context: context,
-      initialDate: _dateTime,
+      initialDate: DateTime(now.year, now.month, now.day),
       firstDate: DateTime(now.year - 72),
-      lastDate: _dateTime,
+      lastDate: DateTime(now.year, now.month, now.day ),
     );
     if (picked != null) {
       _dateTime = picked;
@@ -307,411 +314,405 @@ class _CreatePostFirstStepState extends State<CreatePostFirstStep> {
       // state
       // district
       // pincode
-      body: Form(
-        key: formKey,
-        child: ListView(
-          padding: EdgeInsets.symmetric(horizontal: 25, vertical: 20),
-          children: [
-            EditTextField(
-              validator:
-                  widget.postType == 'missing' ? onlyRequiredValidate : null,
-              controller: firstStepData.nameCon,
-              onChanged: (input) {},
-              maxLines: 1,
-              labelText: 'Full Name',
-              hint: 'Enter full name',
-            ),
-            EditTextField(
-              controller: firstStepData.fatherNameCon,
-              onChanged: (input) {},
-              maxLines: 1,
-              labelText: 'Father Name',
-              hint: 'Enter father name',
-            ),
-            SizedBox(height: 10),
-            Text(
-              "Gender",
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-            InputDecorator(
-              decoration: InputDecoration(
-                hintText: "Gender",
-                fillColor: Theme.of(context).inputDecorationTheme.fillColor,
-                hintStyle: TextStyle(color: Colors.black),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(10),
-                  ),
-                  borderSide: BorderSide(color: Colors.transparent, width: 0),
+      body: SingleChildScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
+        child: Form(
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          key: formKey,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                EditTextField(
+                  autoValidateMode: AutovalidateMode.always,
+                  validator:
+                      widget.postType == 'missing' ? onlyRequiredValidate : null,
+                  controller: firstStepData.nameCon,
+                  onChanged: (input) {},
+                  maxLines: 1,
+                  labelText: widget.postType == 'missing' ? 'Name *' : 'Name',
+                  hint: 'Enter full name',
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(10),
-                  ),
-                  borderSide: BorderSide(
-                      color: Theme.of(context).shadowColor, width: 0),
+                EditTextField(
+                  autoValidateMode: AutovalidateMode.always,
+                  validator:
+                      widget.postType == 'missing' ? onlyRequiredValidate : null,
+                  controller: firstStepData.fatherNameCon,
+                  onChanged: (input) {},
+                  maxLines: 1,
+                  labelText: widget.postType == 'missing'
+                      ? 'Father Name *'
+                      : 'Father Name',
+                  hint: 'Enter father name',
                 ),
-                isDense: true,
-                contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                filled: true,
-                // fillColor: Color(0xFFEAF1F6),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton(
-                  style: TextStyle(color: Colors.black),
-                  value: firstStepData.gender,
-                  isDense: true,
-                  hint: Text(
-                    'Select Gender',
+                SizedBox(height: 10),
+                Text(
+                  "Gender *",
+                  style:
+                      const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+                InputDecorator(
+                  decoration: InputDecoration(
+                    hintText: "Gender *",
+                    fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+                    hintStyle: TextStyle(color: Colors.black),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(10),
+                      ),
+                      borderSide: BorderSide(color: Colors.transparent, width: 0),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(10),
+                      ),
+                      borderSide: BorderSide(
+                          color: Theme.of(context).shadowColor, width: 0),
+                    ),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    filled: true,
+                    // fillColor: Color(0xFFEAF1F6),
                   ),
-                  icon: Icon(
-                    Icons.arrow_drop_down, // Add this
-                    color: appColorBlack, // Add this
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton(
+                      style: TextStyle(color: Colors.black),
+                      value: firstStepData.gender,
+                      isDense: true,
+                      hint: Text(
+                        'Select Gender',
+                      ),
+                      icon: Icon(
+                        Icons.arrow_drop_down, // Add this
+                        color: appColorBlack, // Add this
+                      ),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          firstStepData.gender = newValue;
+                          // state.didChange(newValue);
+                        });
+                      },
+                      items: gender1.map((item) {
+                        return new DropdownMenuItem(
+                          child: new Text(
+                            item,
+                            textAlign: TextAlign.center,
+                          ),
+                          value: item,
+                        );
+                      }).toList(),
+                    ),
                   ),
-                  onChanged: (String? newValue) {
+                ),
+                EditTextField(
+                  autoValidateMode: AutovalidateMode.always,
+                  validator: onlyRequiredValidate,
+                  controller: firstStepData.ageCon,
+                  onChanged: (input) {},
+                  maxLines: 1,
+                  keyBoard: TextInputType.number,
+                  inputFormatterData: digitsInputFormatter(size: 3),
+                  labelText: 'Age *',
+                  hint: 'Enter age',
+                ),
+                EditTextField(
+                  //validator: onlyRequiredValidate,
+                  controller: firstStepData.height,
+                  onChanged: (input) {},
+                  maxLines: 1,
+                  keyBoard: TextInputType.number,
+                  inputFormatterData: priceInputFormatter(size: 4),
+                  labelText: 'Height',
+                  hint: 'Enter height in feet',
+                ),
+                EditTextField(
+                  // validator: onlyRequiredValidate,
+                  controller: firstStepData.bodyMark,
+                  onChanged: (input) {},
+                  labelText: 'Body Mark',
+                  hint: 'Enter body mark',
+                ),
+                EditTextField(
+                  // validator: onlyRequiredValidate,
+                  controller: firstStepData.remarks,
+                  onChanged: (input) {},
+                  labelText: 'Remarks',
+                  hint: 'Enter remarks',
+                ),
+                if (widget.postType == 'dead' || widget.postType == 'found')
+                  Column(
+                    children: [
+                      EditTextField(
+                        validator: onlyRequiredValidate,
+                        controller: firstStepData.dateFoundCon,
+                        // onChanged: (input) {},
+                        maxLines: 1,
+                        labelText: 'Found Date *',
+                        // onChanged: (input) {},
+                        readOnly: true,
+                        onTap: () async {
+                          String? date = await selectDate(context);
+                          if (date != null)
+                            firstStepData.dateFoundCon.text = date;
+                        },
+                        hint: 'Enter found date',
+                      ),
+                      EditTextField(
+                        //validator: onlyRequiredValidate,
+                        controller: firstStepData.placeFoundCon,
+                        onChanged: (input) {},
+                        maxLines: 1,
+                        labelText: 'Found Place',
+                        hint: 'Enter found place',
+                      ),
+                    ],
+                  ),
+                EditTextField(
+                  autoValidateMode: AutovalidateMode.always,
+                  validator:
+                      widget.postType == 'missing' ? onlyRequiredValidate : null,
+                  controller: firstStepData.recendencePlaceCon,
+                  onChanged: (input) {},
+                  maxLines: 1,
+                  labelText: widget.postType == 'missing'
+                      ? 'Residence Place *'
+                      : 'Residence Place',
+                  hint: 'Enter residence place',
+                ),
+                EditTextField(
+                  // validator: onlyRequiredValidate,
+                  controller: firstStepData.nativePlaceCon,
+                  onChanged: (input) {},
+                  maxLines: 1,
+                  labelText: 'Native Place',
+                  hint: 'Enter native place',
+                ),
+                if (widget.postType == 'missing')
+                  Column(
+                    children: [
+                      EditTextField(
+                        autoValidateMode: AutovalidateMode.always,
+                        validator: onlyRequiredValidate,
+                        controller: firstStepData.dateMissingCon,
+                        // onChanged: (input) {},
+                        maxLines: 1,
+                        readOnly: true,
+                        labelText: 'Missing Date *',
+                        onTap: () async {
+                          // firstStepData.dateMissingCon.text =
+                          String? date = await selectDate(context);
+                          if (date != null)
+                            firstStepData.dateMissingCon.text = date;
+                        },
+                        hint: 'Enter missing date',
+                      ),
+                      EditTextField(
+                        autoValidateMode: AutovalidateMode.always,
+                        validator: onlyRequiredValidate,
+                        controller: firstStepData.placeMissingCon,
+                        onChanged: (input) {},
+                        maxLines: 1,
+                        labelText: 'Missing Place *',
+                        hint: 'Enter missing place',
+                      ),
+                    ],
+                  ),
+                EditTextField(
+                  //validator: onlyRequiredValidate,
+                  controller: firstStepData.firDdNumber,
+                  onChanged: (input) {},
+                  labelText: 'FIR / DD / Complaint No',
+                  hint: 'Enter fir dd number',
+                ),
+                EditTextField(
+                  //validator: onlyRequiredValidate,
+                  controller: firstStepData.dateOfFIR,
+                  onChanged: (input) {},
+                  readOnly: true,
+                  onTap: () async {
+                    String? date = await selectDate(context);
+                    if (date != null) firstStepData.dateOfFIR.text = date;
+                  },
+                  inputFormatterData: digitsInputFormatter(size: 3),
+                  labelText: 'FIR / DD / Complaint Date',
+                  hint: 'Tap to select date',
+                ),
+                EditTextField(
+                  //validator: onlyRequiredValidate,
+                  controller: firstStepData.policeStation,
+                  onChanged: (input) {},
+                  labelText: 'Police Station',
+                  hint: 'Enter police station',
+                ),
+                if (widget.postType == 'missing')
+                  EditTextField(
+                    //validator: onlyRequiredValidate,
+                    controller: firstStepData.policeStationAdd,
+                    onChanged: (input) {},
+                    labelText: 'Police Station Address',
+                    hint: 'Enter police station address',
+                  ),
+                EditTextField(
+                  //validator: validateMobile,
+                  controller: firstStepData.policeStationNo,
+                  onChanged: (input) {},
+                  maxLines: 1,
+                  maxLength: 15,
+                  keyBoard: TextInputType.number,
+                  inputFormatterData: digitsInputFormatter(),
+                  labelText: 'Police Station Contact No',
+                  hint: 'Enter police station contact number',
+                ),
+                SizedBox(height: 10),
+                // if (widget.postType != 'missing')
+                CSCPicker(
+                  flagState: CountryFlag.SHOW_IN_DROP_DOWN_ONLY,
+                  disableCountry: false,
+                  currentCity: firstStepData.selectedDistrict,
+                  currentState: firstStepData.selectedState,
+                  defaultCountry: CscCountry.India,
+                  cityDropdownLabel: 'District',
+                  disabledDropdownDecoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                      color: Theme.of(context).inputDecorationTheme.fillColor,
+                      border: Border.all(color: Colors.transparent, width: 1)),
+                  dropdownDecoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                      color: Theme.of(context).inputDecorationTheme.fillColor,
+                      border: Border.all(color: Colors.transparent, width: 1)),
+                  onCountryChanged: (value) {
                     setState(() {
-                      firstStepData.gender = newValue;
-                      // state.didChange(newValue);
+                      firstStepData.selectedDistrict = value;
                     });
                   },
-                  items: gender1.map((item) {
-                    return new DropdownMenuItem(
-                      child: new Text(
-                        item,
-                        textAlign: TextAlign.center,
-                      ),
-                      value: item,
-                    );
-                  }).toList(),
+                  onStateChanged: (value) {
+                    setState(() {
+                      firstStepData.selectedState = value ?? '';
+                    });
+                  },
+                  onCityChanged: (value) {
+                    setState(() {
+                      firstStepData.selectedDistrict = value ?? '';
+                    });
+                  },
                 ),
-              ),
-            ),
-            EditTextField(
-              validator: onlyRequiredValidate,
-              controller: firstStepData.ageCon,
-              onChanged: (input) {},
-              maxLines: 1,
-              keyBoard: TextInputType.number,
-              inputFormatterData: digitsInputFormatter(size: 3),
-              labelText: 'Age',
-              hint: 'Enter age',
-            ),
-            EditTextField(
-              validator: onlyRequiredValidate,
-              controller: firstStepData.height,
-              onChanged: (input) {},
-              maxLines: 1,
-              keyBoard: TextInputType.number,
-              inputFormatterData: priceInputFormatter(size: 4),
-              labelText: 'Height',
-              hint: 'Enter height in feet',
-            ),
-            EditTextField(
-              // validator: onlyRequiredValidate,
-              controller: firstStepData.bodyMark,
-              onChanged: (input) {},
-              labelText: 'Body Mark',
-              hint: 'Enter body mark',
-            ),
-            EditTextField(
-              // validator: onlyRequiredValidate,
-              controller: firstStepData.remarks,
-              onChanged: (input) {},
-              labelText: 'Remarks',
-              hint: 'Enter remarks',
-            ),
-            if (widget.postType == 'dead' || widget.postType == 'found')
-              Column(
-                children: [
+                EditTextField(
+                  autoValidateMode: AutovalidateMode.always,
+                  validator: onlyRequiredValidate,
+                  controller: firstStepData.policeIOName,
+                  onChanged: (input) {},
+                  labelText: 'Police IO / Your Name *',
+                  hint: widget.postType == 'found'
+                      ? 'Enter police io'
+                      : 'Enter police io or your name',
+                ),
+                if (widget.postType == 'found')
                   EditTextField(
-                    validator: onlyRequiredValidate,
-                    controller: firstStepData.dateFoundCon,
-                    // onChanged: (input) {},
-                    maxLines: 1,
-                    labelText: 'Found Date',
-                    // onChanged: (input) {},
-                    readOnly: true,
-                    onTap: () async {
-                      String? date = await selectDate(context);
-                      if (date != null) firstStepData.dateFoundCon.text = date;
-                    },
-                    hint: 'Enter found date',
-                  ),
-                  EditTextField(
-                    validator: onlyRequiredValidate,
-                    controller: firstStepData.placeFoundCon,
+                    //validator: onlyRequiredValidate,
+                    controller: firstStepData.ngoOrUsername,
                     onChanged: (input) {},
-                    maxLines: 1,
-                    labelText: 'Found Place',
-                    hint: 'Enter found place',
+                    labelText: 'NGO / Your Name',
+                    hint: 'Enter ngo or your name',
                   ),
-                ],
-              ),
-            EditTextField(
-              // validator: onlyRequiredValidate,
-              controller: firstStepData.recendencePlaceCon,
-              onChanged: (input) {},
-              maxLines: 1,
-              labelText: 'Residence Place',
-              hint: 'Enter residence place',
-            ),
-            EditTextField(
-              // validator: onlyRequiredValidate,
-              controller: firstStepData.nativePlaceCon,
-              onChanged: (input) {},
-              maxLines: 1,
-              labelText: 'Native Place',
-              hint: 'Enter native place',
-            ),
-            if (widget.postType == 'missing')
-              Column(
-                children: [
-                  EditTextField(
-                    // validator: onlyRequiredValidate,
-                    controller: firstStepData.dateMissingCon,
-                    // onChanged: (input) {},
-                    maxLines: 1,
-                    readOnly: true,
-                    labelText: 'Missing Date',
-                    onTap: () async {
-                      // firstStepData.dateMissingCon.text =
-                      String? date = await selectDate(context);
-                      if (date != null)
-                        firstStepData.dateMissingCon.text = date;
-                    },
-                    hint: 'Enter missing date',
-                  ),
-                  EditTextField(
-                    // validator: onlyRequiredValidate,
-                    controller: firstStepData.placeMissingCon,
-                    onChanged: (input) {},
-                    maxLines: 1,
-                    labelText: 'Missing Place',
-                    hint: 'Enter missing place',
-                  ),
-                ],
-              ),
-            EditTextField(
-              //validator: onlyRequiredValidate,
-              controller: firstStepData.firDdNumber,
-              onChanged: (input) {},
-              labelText: 'FIR / DD / Complaint No',
-              hint: 'Enter fir dd number',
-            ),
-            EditTextField(
-              //validator: onlyRequiredValidate,
-              controller: firstStepData.dateOfFIR,
-              onChanged: (input) {},
-              readOnly: true,
-              onTap: () async {
-                String? date = await selectDate(context);
-                if (date != null) firstStepData.dateOfFIR.text = date;
-              },
-              inputFormatterData: digitsInputFormatter(size: 3),
-              labelText: 'FIR / DD / Complaint Date',
-              hint: 'Tap to select date',
-            ),
-            EditTextField(
-              //validator: onlyRequiredValidate,
-              controller: firstStepData.policeStation,
-              onChanged: (input) {},
-              labelText: 'Police Station',
-              hint: 'Enter police station',
-            ),
-            if (widget.postType == 'missing')
-              EditTextField(
-                //validator: onlyRequiredValidate,
-                controller: firstStepData.policeStationAdd,
-                onChanged: (input) {},
-                labelText: 'Police Station Address',
-                hint: 'Enter police station address',
-              ),
-            EditTextField(
-              //validator: validateMobile,
-              controller: firstStepData.policeStationNo,
-              onChanged: (input) {},
-              maxLines: 1,
-              keyBoard: TextInputType.number,
-              inputFormatterData: digitsInputFormatter(),
-              labelText: 'Police Station Contact No',
-              hint: 'Enter police station contact number',
-            ),
-            SizedBox(height: 10),
-            // if (widget.postType != 'missing')
-            CSCPicker(
-              flagState: CountryFlag.SHOW_IN_DROP_DOWN_ONLY,
-              defaultCountry: DefaultCountry.India,
-              disableCountry: true,
-              currentCity: firstStepData.selectedDistrict,
-              currentState: firstStepData.selectedState,
-              cityDropdownLabel: 'District',
-              disabledDropdownDecoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(5)),
-                  color: Theme.of(context).inputDecorationTheme.fillColor,
-                  border: Border.all(color: Colors.transparent, width: 1)),
-              dropdownDecoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(5)),
-                  color: Theme.of(context).inputDecorationTheme.fillColor,
-                  border: Border.all(color: Colors.transparent, width: 1)),
-              // onCountryChanged: (value) {
-              //   setState(() {
-              //     countryValue = value;
-              //   });
-              // },
-              onStateChanged: (value) {
-                setState(() {
-                  firstStepData.selectedState = value ?? '';
-                });
-              },
-              onCityChanged: (value) {
-                setState(() {
-                  firstStepData.selectedDistrict = value ?? '';
-                });
-              },
-            ),
-            EditTextField(
-              //validator:
-              //  widget.postType == 'found' ? null : onlyRequiredValidate,
-              controller: firstStepData.policeIOName,
-              onChanged: (input) {},
-              labelText: widget.postType == 'found'
-                  ? 'Police IO'
-                  : 'Police IO / Your Name',
-              hint: widget.postType == 'found'
-                  ? 'Enter police io'
-                  : 'Enter police io or your name',
-            ),
-            if (widget.postType == 'found')
-              EditTextField(
-                //validator: onlyRequiredValidate,
-                controller: firstStepData.ngoOrUsername,
-                onChanged: (input) {},
-                labelText: 'NGO / Your Name',
-                hint: 'Enter ngo or your name',
-              ),
-            EditTextField(
-              //validator: validateMobile,
-              controller: firstStepData.contactNumber,
-              onChanged: (input) {},
-              maxLines: 1,
-              keyBoard: TextInputType.number,
-              inputFormatterData: digitsInputFormatter(),
-              labelText: 'Contact No',
-              hint: 'Enter contact number',
-            ),
-
-// body_mark
-// remarks
-// fir_dd_number
-// date_of_fir
-// police_station
-// contact_number
-// height
-// police_station_no
-
-            // EditTextField(
-            //   validator: onlyRequiredValidate,
-            //   controller: firstStepData.stateCon,
-            //   onChanged: (input) {},
-            //   maxLines: 1,
-            //   labelText: 'State',
-            //   hint: 'Enter state',
-            // ),
-            // EditTextField(
-            //   validator: onlyRequiredValidate,
-            //   controller: firstStepData.districtCon,
-            //   onChanged: (input) {},
-            //   maxLines: 1,
-            //   labelText: 'District',
-            //   hint: 'Enter district',
-            // ),
-            // EditTextField(
-            //   validator: pincodeValidation,
-            //   controller: firstStepData.pincodeCon,
-            //   onChanged: (input) {},
-            //   maxLines: 1,
-            //   inputFormatterData: digitsInputFormatter(size: 6),
-            //   keyBoard: TextInputType.number,
-            //   labelText: 'Pincode',
-            //   hint: 'Enter pincode',
-            // ),
-
-            SizedBox(height: 25),
-            InkWell(
-              onTap: () {
-                if (formKey.currentState!.validate()) {
-                  if (widget.postType == 'missing') {
-                    if (widget.isStory == 1) {
-                      selectImageSource();
-                    } else if (widget.isStory == 2) {
-                      selectVideoSource();
-                    } else if (widget.isStory == 3) {
-                      selectPDFFile();
-                    } else {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => PhotoScreen(
-                                    userName: widget.userName,
-                                    userimage: widget.userimage,
-                                    firstStepData: firstStepData,
-                                    // postType: widget.postType,
-                                  )));
-                    }
-                  } else {
-                    if (firstStepData.selectedState != null &&
-                        firstStepData.selectedState != '' &&
-                        firstStepData.selectedDistrict != null &&
-                        firstStepData.selectedDistrict != '') {
-                      if (widget.isStory == 1) {
-                        selectImageSource();
-                      } else if (widget.isStory == 2) {
-                        selectVideoSource();
-                      } else if (widget.isStory == 3) {
-                        selectPDFFile();
+                EditTextField(
+                  autoValidateMode: AutovalidateMode.always,
+                  validator: validateMobile,
+                  controller: firstStepData.contactNumber,
+                  onChanged: (input) {},
+                  maxLines: 1,
+                  keyBoard: TextInputType.number,
+                  inputFormatterData: digitsInputFormatter(),
+                  labelText: 'Contact No *',
+                  hint: 'Enter contact number',
+                ),
+                SizedBox(height: 25),
+                InkWell(
+                  onTap: () {
+                    if (formKey.currentState!.validate()) {
+                      if (widget.postType == 'missing' &&
+                          firstStepData.nameCon.text.length != 0 &&
+                          firstStepData.fatherNameCon.text.isNotEmpty &&
+                          firstStepData.ageCon.text.isNotEmpty &&
+                          firstStepData.gender!.isNotEmpty &&
+                          firstStepData.dateMissingCon.text.isNotEmpty &&
+                          firstStepData.recendencePlaceCon.text.isNotEmpty &&
+                          firstStepData.placeMissingCon.text.isNotEmpty &&
+                          firstStepData.ngoOrUsername.text.isNotEmpty &&
+                          firstStepData.contactNumber.text.isNotEmpty) {
+                        if (widget.isStory == 1) {
+                          selectImageSource();
+                        } else if (widget.isStory == 2) {
+                          selectVideoSource();
+                        } else if (widget.isStory == 3) {
+                          selectPDFFile();
+                        } else {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => PhotoScreen(
+                                        userName: widget.userName,
+                                        userimage: widget.userimage,
+                                        firstStepData: firstStepData,
+                                        // postType: widget.postType,
+                                      )));
+                        }
                       } else {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => PhotoScreen(
-                                      userName: widget.userName,
-                                      userimage: widget.userimage,
-                                      firstStepData: firstStepData,
-                                      // postType: widget.postType,
-                                    )));
+                        if (firstStepData.selectedState != null &&
+                            firstStepData.selectedState != '' &&
+                            firstStepData.selectedDistrict != null &&
+                            firstStepData.selectedDistrict != '') {
+                          if (widget.isStory == 1) {
+                            selectImageSource();
+                          } else if (widget.isStory == 2) {
+                            selectVideoSource();
+                          } else if (widget.isStory == 3) {
+                            selectPDFFile();
+                          } else {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => PhotoScreen(
+                                          userName: widget.userName,
+                                          userimage: widget.userimage,
+                                          firstStepData: firstStepData,
+                                          // postType: widget.postType,
+                                        )));
+                          }
+                        } else {
+                          if (firstStepData.selectedState == null ||
+                              firstStepData.selectedState == '')
+                            socialootoast(
+                                "Error", "Please select state first", context);
+                          if (firstStepData.selectedDistrict == null ||
+                              firstStepData.selectedDistrict == '')
+                            socialootoast(
+                                "Error", "Please select city first", context);
+                        }
                       }
-                    } else {
-                      if (firstStepData.selectedState == null ||
-                          firstStepData.selectedState == '')
-                        socialootoast(
-                            "Error", "Please select state first", context);
-                      if (firstStepData.selectedDistrict == null ||
-                          firstStepData.selectedDistrict == '')
-                        socialootoast(
-                            "Error", "Please select city first", context);
                     }
-                  }
-                }
-              },
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(5)),
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [Color(0xFF1246A5), Color(0xFF1e3c72)],
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.all(Radius.circular(5)),
+                      gradient: LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [Color(0xFF1246A5), Color(0xFF1e3c72)],
+                      ),
+                    ),
+                    child: const Text(
+                      'NEXT',
+                      style: TextStyle(fontSize: 20, color: Colors.white),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'NEXT',
-                  style: TextStyle(fontSize: 20, color: Colors.white),
-                ),
-              ),
-            )
-          ],
+                )
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -1221,15 +1222,8 @@ List<TextInputFormatter> priceInputFormatter({int? size}) {
 List<TextInputFormatter> digitsInputFormatter({int? size}) {
   return [
     FilteringTextInputFormatter.digitsOnly,
-    LengthLimitingTextInputFormatter(size ?? 10),
+    LengthLimitingTextInputFormatter(size ?? 15),
   ];
-}
-
-onlyRequiredValidate(value) {
-  if (value.isEmpty)
-    return 'Field is required';
-  else
-    return null;
 }
 
 pincodeValidation(value) {
@@ -1246,8 +1240,8 @@ validateMobile(String value) {
     return 'Mobile Number is Required';
   else if (value.length < 10)
     return 'Mobile Number required at least 10 numbers';
-  else if (value.length > 10)
-    return 'Mobile Number required at most 10 numbers';
+  /*else if (value.length > 10)
+    return 'Mobile Number required at most 10 numbers';*/
   else
     return null;
 }

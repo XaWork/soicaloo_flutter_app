@@ -963,7 +963,7 @@ class _HomeFeedsState extends State<HomeFeeds>
               post.totalLikes = post.totalLikes! + 1;
               _likePost(post.postId!);
             });
-            var _duration = new Duration(milliseconds: 500);
+            var _duration = new Duration(milliseconds: 30);
             Timer(_duration, () {
               post.dataV = false;
             });
@@ -1023,7 +1023,7 @@ class _HomeFeedsState extends State<HomeFeeds>
                         ? Positioned.fill(
                             child: AnimatedOpacity(
                                 opacity: post.dataV! ? 1.0 : 0.0,
-                                duration: Duration(milliseconds: 700),
+                                duration: Duration(milliseconds: 30),
                                 child: Icon(
                                   CupertinoIcons.heart_fill,
                                   color: Colors.red,
@@ -1083,7 +1083,7 @@ class _HomeFeedsState extends State<HomeFeeds>
                       ? Positioned.fill(
                           child: AnimatedOpacity(
                               opacity: post.dataV! ? 1.0 : 0.0,
-                              duration: Duration(milliseconds: 700),
+                              duration: Duration(milliseconds: 30),
                               child: Icon(
                                 CupertinoIcons.heart_fill,
                                 color: Colors.red,

@@ -353,7 +353,7 @@ class _LoginState extends State<Login> {
     return InkWell(
       onTap: () {
         _handleURLButtonPress(
-            context, "https://app.waahak.com/missing-person/privacy-policy");
+            context, "https://mph.missingpersonhelpline.org/privacy-policy");
       },
       child: Container(
         padding: const EdgeInsets.all(15),

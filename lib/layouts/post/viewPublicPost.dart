@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/cupertino.dart';
@@ -51,7 +52,6 @@ class _HomeState extends State<ViewPublicPost> {
 
   late PublicPostModel publicPost;
   late UnlikeModal unlikeModal;
-
   late LikeModal likeModal;
 
   _getPost() async {
@@ -780,6 +780,7 @@ class _HomeState extends State<ViewPublicPost> {
 
   @override
   Widget build(BuildContext context) {
+    final mode = AdaptiveTheme.of(context).mode;
     SizeConfig().init(context);
     return WillPopScope(
       onWillPop: () async {
@@ -826,6 +827,7 @@ class _HomeState extends State<ViewPublicPost> {
   }
 
   Widget postDetails(Post post) {
+    final mode = AdaptiveTheme.of(context).mode;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       InkWell(
         onTap: () {
@@ -976,7 +978,8 @@ class _HomeState extends State<ViewPublicPost> {
       Container(
         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         margin: EdgeInsets.only(bottom: 20),
-        color: Colors.grey[300],
+        color:
+            mode == AdaptiveThemeMode.light ? Colors.grey[300] : Colors.black,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1241,13 +1244,13 @@ class _HomeState extends State<ViewPublicPost> {
         Divider(height: 1),
         myRow('Full Name *', '${post.missingData?.fullName ?? ''}', 0),
         Divider(height: 1),
-        myRow('Father Name', '${post.missingData?.fatherName ?? ''}', 1),
+        myRow('Father Name *', '${post.missingData?.fatherName ?? ''}', 1),
         Divider(height: 1),
         myRow('Gender  *', '${post.missingData?.gender ?? ''}', 0),
         Divider(height: 1),
         myRow('Age *', '${post.missingData?.age ?? ''}', 1),
         Divider(height: 1),
-        myRow('Height *', '${post.missingData?.height ?? ''}', 0),
+        myRow('Height ', '${post.missingData?.height ?? ''}', 0),
         Divider(height: 1),
         myRow('Body Mark', '${post.missingData?.bodyMark ?? ''}', 1),
         Divider(height: 1),
@@ -1258,7 +1261,7 @@ class _HomeState extends State<ViewPublicPost> {
         Divider(height: 1),
         myRow('Native Place', '${post.missingData?.nativePlace ?? ''}', 0),
         Divider(height: 1),
-        myRow('Missing Date', '${post.missingData?.dateMissing ?? ''}', 1),
+        myRow('Missing Date *', '${post.missingData?.dateMissing ?? ''}', 1),
         Divider(height: 1),
         myRow('Missing Place', '${post.missingData?.placeMissing ?? ''}', 0),
         Divider(height: 1),
@@ -1295,13 +1298,13 @@ class _HomeState extends State<ViewPublicPost> {
     return Column(
       children: [
         Divider(height: 1),
-        myRow(' Full Name', '${post.foundData?.fullName ?? ''}', 0),
+        myRow('Full Name', '${post.foundData?.fullName ?? ''}', 0),
         Divider(height: 1),
         myRow('Father Name', '${post.foundData?.fatherName ?? ''}', 1),
         Divider(height: 1),
         myRow('Gender', '${post.foundData?.gender ?? ''}', 0),
         Divider(height: 1),
-        myRow('Age', '${post.foundData?.age ?? ''}', 1),
+        myRow('Age *', '${post.foundData?.age ?? ''}', 1),
         Divider(height: 1),
         myRow('Height', '${post.foundData?.height ?? ''}', 0),
         Divider(height: 1),
@@ -1350,7 +1353,7 @@ class _HomeState extends State<ViewPublicPost> {
         // Divider(height: 1),
         // myRow('UID', '${post.postId}', 0),
         Divider(height: 1),
-        myRow('Full Name *', '${post.deadData?.fullName ?? ''}', 0),
+        myRow('Full Name ', '${post.deadData?.fullName ?? ''}', 0),
         Divider(height: 1),
         myRow('Father Name', '${post.deadData?.fatherName ?? ''}', 1),
         Divider(height: 1),
@@ -1358,7 +1361,7 @@ class _HomeState extends State<ViewPublicPost> {
         Divider(height: 1),
         myRow('Age *', '${post.deadData?.age ?? ''}', 1),
         Divider(height: 1),
-        myRow('Height *', '${post.deadData?.height ?? ''}', 0),
+        myRow('Height ', '${post.deadData?.height ?? ''}', 0),
         Divider(height: 1),
         myRow('Body Mark', '${post.deadData?.bodyMark ?? ''}', 1),
         Divider(height: 1),
@@ -1398,8 +1401,13 @@ class _HomeState extends State<ViewPublicPost> {
   }
 
   Widget myRow(String heading, String data, int i) {
+    final mode = AdaptiveTheme.of(context).mode;
     return Container(
-      color: i == 1 ? Colors.grey[200] : null,
+      color: i == 1
+          ? mode == AdaptiveThemeMode.light
+              ? Colors.grey[200]
+              : Colors.black
+          : null,
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 7),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1423,8 +1431,9 @@ class _HomeState extends State<ViewPublicPost> {
   }
 
   footerWidget(Post post) {
+    final mode = AdaptiveTheme.of(context).mode;
     return Container(
-      color: Colors.grey[300],
+      color: mode == AdaptiveThemeMode.light ? Colors.grey[300] : Colors.black,
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
