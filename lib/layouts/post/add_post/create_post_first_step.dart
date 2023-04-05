@@ -583,7 +583,7 @@ class _CreatePostFirstStepState extends State<CreatePostFirstStep> {
                       border: Border.all(color: Colors.transparent, width: 1)),
                   onCountryChanged: (value) {
                     setState(() {
-                      firstStepData.selectedDistrict = value;
+                      firstStepData.selectCountry = value;
                     });
                   },
                   onStateChanged: (value) {
@@ -629,6 +629,7 @@ class _CreatePostFirstStepState extends State<CreatePostFirstStep> {
                 SizedBox(height: 25),
                 InkWell(
                   onTap: () {
+                    print("country is : ${firstStepData.selectCountry}");
                     if (formKey.currentState!.validate()) {
                       if (widget.postType == 'missing' &&
                           firstStepData.nameCon.text.length != 0 &&

@@ -272,7 +272,7 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
           widget.firstStepData.policeStationAdd.text;
     request.fields['police_station_no'] =
         widget.firstStepData.policeStationNo.text;
-    request.fields["country"] = widget.firstStepData.selectedState ?? '';
+    request.fields["country"] = widget.firstStepData.selectCountry ?? '';
     request.fields['state'] = widget.firstStepData.selectedState ?? '';
     request.fields['district'] = widget.firstStepData.selectedDistrict ?? '';
     if (widget.firstStepData.postType == 'found')
