@@ -164,8 +164,35 @@ class _HomeState extends State<ViewPublicPost> {
                                     onTap: () {
                                       Navigator.of(context, rootNavigator: true)
                                           .pop("Discard");
-
-                                      _reportPost(postId, 'hide', '');
+                                      showDialog(context: context, builder: (context){
+                                        return  Row(
+                                          children: [
+                                            Expanded(
+                                              child: AlertDialog(
+                                                title: Text('Alert!'),           // To display the title it is optional
+                                                content: Text('Do you really want to delete this post ?'),   // Message which will be pop up on the screen
+                                                // Action widget which will provide the user to acknowledge the choice
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context, rootNavigator: true)
+                                                          .pop("Discard");
+                                                      _deletePost(postId);},             // function used to perform after pressing the button
+                                                    child: Text('Yes'),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context, rootNavigator: true)
+                                                          .pop("Discard");
+                                                    },
+                                                    child: Text('No'),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      });
                                     },
                                     title: new Text(
                                       "Delete",
@@ -315,7 +342,47 @@ class _HomeState extends State<ViewPublicPost> {
       debugPrint('${reportPostData['response_code']}');
     }
     openHideSheet(context, status);
-    print(responseData);
+    print("Response is : $responseData");
+
+    setState(() {
+      stackLoader = false;
+    });
+  }
+
+  _deletePost(postId) async {
+    print("Post id : $postId \n userid : $userID");
+    setState(() {
+      stackLoader = true;
+    });
+
+    var uri = Uri.parse('${baseUrl()}/delete_post');
+    var request = new http.MultipartRequest("POST", uri);
+    Map<String, String> headers = {
+      "Accept": "application/json",
+    };
+    request.headers.addAll(headers);
+    request.fields['user_id'] = userID!;
+    request.fields['post_id'] = postId;
+    var response = await request.send();
+    print("response status : ${response.statusCode}");
+    String responseData = await response.stream.transform(utf8.decoder).join();
+    reportPostData = json.decode(responseData);
+    if (reportPostData['response_code'] == '1') {
+      setState(() {
+        stackLoader = false;
+        _textFieldController.clear();
+      });
+      // Navigator.pop(context, true);
+    } else {
+      setState(() {
+        stackLoader = false;
+      });
+
+      print('REPORT RESPONSE FAIL');
+      debugPrint('${reportPostData['response_code']}');
+    }
+    openHideSheet(context, "");
+    print("Response is : $responseData");
 
     setState(() {
       stackLoader = false;

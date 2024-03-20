@@ -136,6 +136,7 @@ class _FilterViewState extends State<FilterView> {
         initDataList.clear();
         print("Initial DataList ----> Cleared");
         final data = jsonDecode(response.body)['post'];
+
         print("Data ----> Fetched");
 
         for (var each in data) {
@@ -144,6 +145,11 @@ class _FilterViewState extends State<FilterView> {
         print(initDataList);
         dataList = dataList + initDataList;
         print("Data ----> Added to the DataList!");
+        var message = jsonDecode(response.body)['post'];
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
+        if (initDataList.isEmpty) {
+        }
       } else {
         log(response..statusCode.toString());
       }
@@ -1225,8 +1231,8 @@ class _FilterViewState extends State<FilterView> {
               ? CSCPicker(
                   flagState: CountryFlag.SHOW_IN_DROP_DOWN_ONLY,
                   showCities: true,
-            defaultCountry: CscCountry.India,
-            showStates: true,
+                  defaultCountry: CscCountry.India,
+                  showStates: true,
                   disableCountry: false,
                   cityDropdownLabel: 'District',
                   dropdownItemStyle: TextStyle(
